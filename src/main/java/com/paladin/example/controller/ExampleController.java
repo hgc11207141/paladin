@@ -10,11 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.paladin.example.controller.pojo.ExampleQuery;
+import com.paladin.example.model.OrgUser;
 import com.paladin.example.service.ExampleService;
 import com.paladin.framework.common.PageResult;
+import com.paladin.framework.core.container.ConstantsContainer;
 import com.paladin.framework.utils.WebUtil;
 import com.paladin.framework.web.response.CommonResponse;
 
@@ -67,5 +70,18 @@ public class ExampleController {
 		return CommonResponse.getSuccessResponse(new PageResult(exampleService.searchPage(query)));
 	}
 	
+	@RequestMapping(value = "/edit/input")
+	public Object editInput(@RequestParam String id, Model model) {	
+		OrgUser user = exampleService.get(id);
+		model.addAttribute("user", user);
+		return "/example/edit";
+	}
+	
+	
+	@RequestMapping(value ="/system/constants/enum")
+	@ResponseBody
+	public Object enumConstants(@RequestParam("code") String[] code) {		
+		return CommonResponse.getSuccessResponse(ConstantsContainer.getTypeChildren(code));	
+	}
 	
 }

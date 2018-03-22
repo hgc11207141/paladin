@@ -1,7 +1,7 @@
 (function($) {
 
     // --------------------------------------
-    // base
+    // common
     // --------------------------------------
 
     $.extend({
@@ -28,23 +28,6 @@
             }
             return o;
         },
-        getWindowFunction: function(name) {
-            // 
-            if (window[name])
-                return window[name];
-            if (window.parent[name])
-                return window.parent[name];
-
-            // 只检查一层
-            var frames = window.frames;
-            var i;
-
-            for (i = 0; i < frames.length; i++) {
-                var fun = frames[i][name];
-                if (fun)
-                    return fun;
-            }
-        },
         formatDate: function(date, format) {
 
             var o = {
@@ -65,7 +48,7 @@
                         ("00" + o[k]).substr(("" + o[k]).length));
             return format;
         },
-        getUrlVariable: function getQueryVariable(variable) {
+        getUrlVariable: function(variable) {
             var query = window.location.search.substring(1);
             var vars = query.split("&");
             for (var i = 0; i < vars.length; i++) {
@@ -79,6 +62,7 @@
     // --------------------------------------
     // constant
     // --------------------------------------
+
     _RESPONSE_STATUS = {
         NO_LOGIN: -1,
         NO_PERMISSION: -2,
@@ -95,7 +79,7 @@
     // --------------------------------------
 
     /*
-     * options 参数配置基于Messager，参考 http://github.hubspot.com/messenger/
+     * 基于layer组件提供弹框消息，参考 http://www.layui.com/doc/modules/layer.html
      * 
      */
 
@@ -112,27 +96,48 @@
         successMessage: function(message) {
             layer.msg(message, { icon: 1 });
         },
-        successAlert: function(msg) {
-            layer.alert(msg, { icon: 1 });
+        successAlert: function(msg, fun) {
+            layer.alert(msg, { icon: 1 }, fun);
         },
-        failAlert: function(msg) {
-            layer.alert(msg, { icon: 2 });
+        failAlert: function(msg, fun) {
+            layer.alert(msg, { icon: 2 }, fun);
+        },
+        errorAlert: function(msg, fun) {
+            layer.alert(msg, { icon: 5 }, fun);
+        },
+        infoAlert: function(msg, fun) {
+            layer.alert(msg, { icon: 6 }, fun);
         }
     })
+
 
     // --------------------------------------
     // ajax
     // --------------------------------------
+
     $.extend({
-        jsonResposneFunction: function(callback) {
+        ajaxUnLoginHandler: function(callback) {
+            // ajax请求返回未登录状态处理
+            // 暂时跳转主页面到登录页面，有时间可以做弹出登录窗口登录，成功后继续执行ajax请求处理
+
+            $.failAlert("请先登录", function() {
+                top.location.href = "/login";
+            })
+
+        },
+        wrapAjaxSuccessCallback: function(callback) {
+
+            // 包装Ajax成功回调方法，过滤返回内容
             return function(response) {
-                if (typeof response === 'string')
+
+                if (typeof response === 'string') {
                     response = JSON.parse(response)
+                }
                 var resStatus = response.status,
                     status = _RESPONSE_STATUS;
 
                 if (status.NO_LOGIN === resStatus) {
-                    $.errorMessage("请先登录")
+                    $.ajaxUnLoginHandler(callback);
                 } else if (status.NO_PERMISSION === resStatus) {
                     $.errorMessage(response.message || "您没有权限访问该页面或执行该操作");
                 } else if (status.ERROR === resStatus) {
@@ -142,12 +147,14 @@
                 } else if (status.FAIL_VALID === resStatus) {
                     $.errorMessage(response.message || "验证不成功，操作失败");
                 } else {
-                    if (callback && typeof callback === 'function')
+                    if (callback && typeof callback === 'function') {
                         callback(response.result);
+                    }
                 }
             }
         },
         postJsonAjax: function(url, data, callback) {
+            // 发送json格式ajax请求
             $.sendAjax({
                 type: "POST",
                 url: url,
@@ -162,22 +169,25 @@
             });
         },
         sendAjax: function(options) {
+            // 发送ajax请求 对应$.ajax()
             var callback = options.success;
-            options.success = $.jsonResposneFunction(callback);
+            options.success = $.wrapAjaxSuccessCallback(callback);
             $.ajax(options);
         },
         getAjax: function(url, callback) {
-            $.get(url, $.jsonResposneFunction(callback));
+            // 对应$.get()
+            $.get(url, $.wrapAjaxSuccessCallback(callback));
         },
         postAjax: function(url, data, callback) {
-
+            // 对应$.post()
             if (typeof data === 'function') {
                 callback = data;
                 data = null;
             }
-            $.post(url, data, $.jsonResposneFunction(callback));
+            $.post(url, data, $.wrapAjaxSuccessCallback(callback));
         },
-        locationPost: function(url, args) {
+        postFormAjax: function(url, args) {
+            // 提交表单形式ajax
             var form = $("<form method='post' action='" + url + "'></form>");
             $.each(args, function(key, value) {
                 var input = $("<input type='hidden'>");
@@ -190,63 +200,6 @@
             document.body.removeChild(form[0]);
         }
     });
-
-    $.extend({
-        addQueryCondition: function(param, el) {
-            param = param || {};
-            $(el).each(function(index) {
-                var $this = $(this);
-                var name = $this.attr("name");
-                name = name || $this.attr("id");
-                if (!name)
-                    return;
-                var value = $this.val();
-                if (value === null)
-                    return;
-
-                var type = typeof(value);
-                if (type === "string") {
-                    value = value.trim();
-                    if (value === "")
-                        return;
-                } else if (type === "undefined")
-                    return;
-
-                param[name] = value;
-
-            });
-        }
-
-    });
-
-    $.fn.toQueryCondition = function(param) {
-        var $this = $(this);
-        var name = $this.attr("name");
-        name = name || $this.attr("id");
-        if (!name)
-            return;
-        var value = $this.val();
-        if (value === null)
-            return;
-
-        var type = typeof(value);
-        if (type === "string") {
-            value = value.trim();
-            if (value === "")
-                return;
-        } else if (type === "undefined")
-            return;
-
-        param[name] = value;
-    }
-
-    // --------------------------------------
-    // login
-    // --------------------------------------
-
-    // --------------------------------------
-    // alert
-    // --------------------------------------
 
     // --------------------------------------
     // 事件分发器
@@ -286,10 +239,7 @@
     _initValidator();
     _initTable();
     _initEnumConstant();
-    _initUnitComponment();
-    _initAssessCycleComponment();
     _initForm();
-    _initFromContent();
 
 })(jQuery);
 
@@ -326,7 +276,7 @@ function _initValidator() {
     $.validator.addMethod("cellphone", function(value, element) { return this.optional(element) || (/^1[3|5|7|8|]\d{9}$/.test(value)); }, "手机号码格式错误");
     //电话（包括手机和座机）
     $.validator.addMethod("phone", function(value, element) { return this.optional(element) || (/((^\d{3,4}-?)?\d{7,8}$)|(^1[3|5|7|8|]\d{9}$)/.test(value)); }, "电话号码格式错误");
-    $.validator.addMethod("englishName", function(value, element) { return this.optional(element) || (/^\w+$/.test(value)); }, "请输入英文名称");
+
     //日期
     $.validator.addMethod("date", function(value, element) {
         var r = value.match(/^(\d{1,4})(-|\/)(\d{1,2})\2(\d{1,2})$/);
@@ -336,6 +286,7 @@ function _initValidator() {
         var d = new Date(r[1], r[3] - 1, r[4]);
         return this.optional(element) || (d.getFullYear() == r[1] && (d.getMonth() + 1) == r[3] && d.getDate() == r[4]);
     }, "日期格式不正确");
+
     //大于
     $.validator.addMethod("largeThan", function(value, element, $name) {
         if ($name) {
@@ -347,11 +298,13 @@ function _initValidator() {
         }
         return true;
     }, "输入值不能小于最小值");
+
     $.validator.addMethod("maxEngLength", function(value, element, maxlength) { return this.optional(element) || (value.replace(/[^\x00-\xff]/g, 'xx').length <= maxlength); }, "输入长度不能超过{0}");
     $.validator.addMethod("minEngLength", function(value, element, minlength) { return this.optional(element) || (value.replace(/[^\x00-\xff]/g, 'xx').length >= minlength); }, "输入长度不能少于{0}");
 
     $.extend($.fn, {
-        createValidate: function(config) {
+        createElementValidater: function(config, requiredStyle) {
+            // 创建元素验证器
             for (var i = 0; this.length > i; i++) {
                 var target = $(this[i]);
 
@@ -379,11 +332,12 @@ function _initValidator() {
 
                 if (target.hasClass("required") || target.attr("required") == "required") {
                     rules.required = true;
-                    target.addRequiredStyle();
 
+                    if (requiredStyle) {
+                        target.addRequiredStyle();
+                    }
 
                     if (!messages.required) {
-
                         var placeholder = target.attr("placeholder");
                         if (placeholder) {
                             messages.required = placeholder;
@@ -395,10 +349,8 @@ function _initValidator() {
                                 messages.required = "请选择" + title;
                             }
                         }
-
                     }
                 }
-
 
                 var area = target.attr("data-area");
                 if (area) {
@@ -464,7 +416,6 @@ function _initValidator() {
                         if (thanTitle) {
                             messages.largeThan = "输入值必须大于" + thanTitle + "的值";
                         }
-
                     }
                 }
 
@@ -472,16 +423,20 @@ function _initValidator() {
                 target.rules("add", rules);
             }
         },
-        createFormValidate: function(config) {
+        createFormValidater: function(config) {
+            // 创建表单验证器
             var validater = this.validate(config);
-            this.find("input[type='text']:enabled,input[type='password']:enabled,input[type='hidden']:enabled,select:enabled,textarea:enabled").createValidate(config);
+            this.find("input[type='text']:enabled,input[type='password']:enabled,input[type='hidden']:enabled,select:enabled,textarea:enabled").createElementValidater(config);
+            this.data("validater", validater);
             return validater;
         },
         validateElement: function(element) {
-            var validater = $(this)[0].validater;
+            // 验证某个元素
+            var validater = $(this).data("validater");
             return validater ? validater.element(element) : true;
         },
         addRequiredStyle: function() {
+            // 添加必填样式
             var target = $(this);
             var inputGroupParent = target.parent(".input-group");
             if (inputGroupParent.length > 0) {
@@ -491,6 +446,7 @@ function _initValidator() {
             }
         },
         removeRequiredStyle: function() {
+            // 移除必填样式
             var target = $(this);
             var inputGroupParent = target.parent(".input-group");
             if (inputGroupParent.length > 0) {
@@ -531,10 +487,14 @@ function _initTable() {
         if (options.columns) {
             options.columns.forEach(function(item) {
 
+                // 对列统一处理
+
                 if (!$.isArray(item)) {
                     item = [item];
                 }
+
                 item.forEach(function(col) {
+                    // formatter 定义数据类型转换，例如time，date等，在这里定义
                     if (col.formatter && typeof col.formatter === 'string') {
                         if (col.formatter == 'date') {
                             col.formatter = function(value, row, index) {
@@ -549,19 +509,38 @@ function _initTable() {
                         } else if (col.formatter == 'time') {
                             col.formatter = function(value, row, index) {
                                 if (value) {
+                                    var time;
                                     if (isNaN(value)) {
-                                        return $.formatDate(new Date(value), "yyyy-MM-dd hh:mm:ss");
+                                        time = new Date(value);
+                                    } else {
+                                        time = new Date();
+                                        time.setTime(value);
                                     }
-                                    return value;
+
+                                    return $.formatDate(time, "yyyy-MM-dd hh:mm:ss");
+                                }
+
+                                return "";
+                            }
+                        } else if (col.formatter == 'date') {
+                            col.formatter = function(value, row, index) {
+                                if (value) {
+                                    var date;
+                                    if (isNaN(value)) {
+                                        date = new Date(value);
+                                    } else {
+                                        date = new Date();
+                                        date.setTime(value);
+                                    }
+
+                                    return $.formatDate(date, "yyyy-MM-dd");
                                 }
 
                                 return "";
                             }
                         }
-
                     }
                 });
-
             });
         }
 
@@ -578,9 +557,11 @@ function _initTable() {
 
         if (options.searchbar) {
             var q = options.queryParams;
+
             options.queryParams = function(params) {
-                if (q)
+                if (q) {
                     params = q(params);
+                }
 
                 $(options.searchbar).find(
                         "input[type='text']:enabled," + "input[type='password']:enabled," +
@@ -595,6 +576,9 @@ function _initTable() {
         }
 
         if (options.treeView) {
+
+            // 对树状table支持，需要treetable.js
+
             var rh = options.responseHandler;
             options.responseHandler = function(res) {
                 // 因为treetable插件中写死了使用parentId，这里需要对返回结果处理下(可以改写插件)
@@ -612,9 +596,7 @@ function _initTable() {
                 if ($.isArray(data)) {
                     var idArr = [];
                     data.forEach(function(item) {
-
                         item.parentId = item[options.treeParentField];
-
                         //如果支持搜索，则会有部分父节点没搜索出来（当然你可以只查询过滤叶节点），
                         //在这里会把没有父节点的节点parentId = null，因而造成数据可能会不完整，使用时候注意
                         if (options.treeParentFilter && item.parentId) {
@@ -628,8 +610,9 @@ function _initTable() {
                                 }
                             }
 
-                            if (!b)
+                            if (!b) {
                                 item.parentId = null;
+                            }
                         }
                     });
                 }
@@ -677,21 +660,17 @@ function _initTable() {
          * 创建boostrap table
          */
         createTable: function(el, options) {
-
             var tables = [];
             $(el).each(function(index) {
-                tables[index] = new _tonto_table($(this), options);
+                tables.push(new _tonto_table($(this), options));
             });
 
-            if (tables.length == 1)
-                return tables[0];
-            return tables;
+            return tables.length == 1 ? tables[0] : tables;
         },
         /**
-         * 获取常量formatter方法，用于bootstrap table column
+         * 获取常量formatter方法，用于bootstrap table column         * 
          */
         getEnumColumnFormatter: function(enumTypeMap, type) {
-
             if (enumTypeMap && type) {
                 return function(value, row, index) {
                     var data = enumTypeMap[type];
@@ -721,106 +700,80 @@ function _initTable() {
         },
         confirmColumnFormatter: function(text) {
             return function() { return '<a class="confirm" href="javascript:void(0);" ><i class="glyphicon glyphicon-edit"></i>' + (text ? text : '确认') + '</a>' };
-        },
-        eventColumnFormatter: function(text) {
-            return function() { return '<a class="event" href="javascript:void(0);" ><i class="glyphicon glyphicon-wrench"></i>' + (text ? text : '事件维护') + '</a>' };
-        },
-        backwardColumnFormatter: function(text) {
-            return function() { return '<a class="backward" href="javascript:void(0);" ><i class="glyphicon glyphicon-backward"></i>' + (text ? text : '退回') + '</a>' };
         }
     });
 
     $.fn.createTable = function() {
-
         var tables = [];
-
-        this.each(function(index) {
-            tables[index] = new _tonto_table($(this), options);
+        this.each(function() {
+            tables.push(new _tonto_table($(this), options));
         });
-
-        if (tables.length == 1)
-            return tables[0];
-        return tables;
+        return tables.length == 1 ? tables[0] : tables;
     };
-}
 
+    $.fn.toQueryCondition = function(param) {
+        var that = $(this);
+        var name = that.attr("name");
+        name = name || that.attr("id");
+        if (!name)
+            return;
+        var value = that.val();
+        if (value === null)
+            return;
 
-function _initFromContent(container) {
+        var type = typeof(value);
+        if (type === "string") {
+            value = value.trim();
+            if (value === "")
+                return;
+        } else if (type === "undefined")
+            return;
 
-    var _isViewForm = false;
-    var _isEditForm = false;
-    var _isAddForm = false;
+        param[name] = value;
+    };
+    
+    // 页码本地化
 
-    /**
-     * 自动根据FORM TYPE对表单做一些特定操作，这里对VIEW查看类型的FORM进行了readonly，disabled的操作 <class = tonto-form-type>
-     */
-    var formTypes = container ? $(container).find(".tonto-form-type") : $(".tonto-form-type");
-
-    formTypes.each(function() {
-        var type = $(this).val();
-        if (type == "VIEW") {
-            _isViewForm = true;
-
-            var forms = container ? $(container).find("form") : $("form");
-            forms.each(function() {
-                $t = $(this);
-                $t.find("textarea, input").attr({ readonly: true });
-                $t.find(":submit").hide();
-                $t.find("input[type='text']").attr('placeholder', null);
-                $t.find("textarea").attr('placeholder', null);
-                $t.find("button[type='button'],input[type='button'],select").attr('disabled', true);
-                $t.find("a").hide();
-            });
-        } else if (type == "EDIT") {
-            _isEditForm = true;
-        } else if (type == "ADD") {
-            _isAddForm = true;
+    $.fn.bootstrapTable.locales['zh-CN'] = {
+        formatLoadingMessage: function () {
+            return '正在努力地加载数据中，请稍候……';
+        },
+        formatRecordsPerPage: function (pageNumber) {
+            return pageNumber;
+        },
+        formatShowingRows: function (pageFrom, pageTo, totalRows) {
+            return '显示' + pageFrom + ' - ' + pageTo + '条 ，共 ' + totalRows + ' 条';
+        },
+        formatSearch: function () {
+            return '搜索';
+        },
+        formatNoMatches: function () {
+            return '没有找到匹配的记录';
+        },
+        formatPaginationSwitch: function () {
+            return '隐藏/显示分页';
+        },
+        formatRefresh: function () {
+            return '刷新';
+        },
+        formatToggle: function () {
+            return '切换';
+        },
+        formatColumns: function () {
+            return '列';
+        },
+        formatExport: function () {
+            return '导出数据';
+        },
+        formatClearFilters: function () {
+            return '清空过滤';
         }
-    });
+    };
 
-
-    // ----------------------------------------------------------
-    //
-    //  以下为查看，修改，添加表单时候各自的一些自动加载
-    //
-    // ----------------------------------------------------------
-
-    /**
-     * 加载时间控件 <class = tonto-datepicker-date>
-     */
-
-    if (!_isViewForm) {
-        var dates = container ? $(container).find(".tonto-datepicker-date") : $(".tonto-datepicker-date");
-        dates.each(function() {
-            var $t = $(this);
-            $t.datepicker({
-                language: "zh-CN",
-                autoclose: true, //选中之后自动隐藏日期选择框
-                //clearBtn: true, //清除按钮
-                //todayBtn: true, //今日按钮
-                format: "yyyy-mm-dd" //日期格式，详见 http://bootstrap-datepicker.readthedocs.org/en/release/options.html#format
-            });
-
-            $t.attr("readonly", true);
-            $t.css("background", "#fff");
-        })
-    }
-
-    if (_isEditForm) {
-        var editUnables = container ? $(container).find(".tonto-edit-unable") : $(".tonto-edit-unable");
-        editUnables.each(function() {
-            var $t = $(this);
-            $t.attr('placeholder', null);
-            $t.attr('disabled', true);
-        });
-    }
-
-    if (_isViewForm) {
-        var a = $(".tonto-select-assess-cycle,.tonto-select-assess-cycle-self,.tonto-select-assess-cycle-user,.tonto-select-assess-cycle-unit,.tonto-select-department,.tonto-select-agency,.tonto-select-unit");
-        a.css("background", "#eee");
-        a.prop("onclick", null).off("click");
-    }
+    $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN']);
+    
 }
+
 
 var _constant_cache = {};
 /**
@@ -986,530 +939,18 @@ function _initEnumConstant(container) {
 
 
 /**
- * 创建UNIT 控件
- */
-function _createUnitComponment(input, type, callback) {
-    var $input = $(input);
-    var $wrap = $('<div class="input-group"/>');
-    var name = $input.attr("name") || $input.attr("id");
-    $input.attr("name", "_" + name);
-    var $hideinput = $('<input type="text" style="display:none" name="' + name + '" id="' + name + '"  />');
-    var $removeBtn = $('<span class="input-group-addon" style="cursor:pointer"><i class="glyphicon glyphicon-remove"> </i></span>');
-    var defaultValue = $input.attr("unitid");
-
-    if (!callback || !(typeof callback == 'function')) {
-        callback = $input.attr("unit-callback");
-        callback = callback ? $.getWindowFunction(callback) : null;
-    }
-
-    $input.attr("readonly", true);
-    $input.css("background", "#fff");
-
-    $input.wrap($wrap);
-    $input.after($removeBtn);
-    $input.after($hideinput);
-
-    var com = {
-        input: $input,
-        defaultValue: defaultValue,
-        callback: callback,
-        removeBtn: $removeBtn,
-        name: name,
-        valueInput: $hideinput,
-        current: null,
-        type: type,
-        treedata: null,
-        setCurrent: function(val) {
-            var that = this;
-            that.current = val;
-            that.input.val(val ? val.name : "");
-            that.valueInput.val(val ? val.id : "");
-
-            if (that.callback)
-                that.callback(val);
-        },
-        setEnabled: function(enabled) {
-            if (enabled) {
-                this.input.attr('disabled', false);
-                this.valueInput.attr('disabled', false);
-                this.input.css("background", "#fff");
-            } else {
-                this.input.attr('disabled', true);
-                this.valueInput.attr('disabled', true);
-                this.input.css("background", "#eee");
-            }
-        },
-        setData: function(data) {
-            var that = this;
-            var treedata;
-            var defaultValue = that.defaultValue;
-            var type = that.type;
-            var callback = that.callback;
-            var current;
-            var ownunit;
-            var isAgency;
-
-            var required = ((that.input.hasClass("required") || that.input.attr("required") == "required"));
-
-            if (type == 'department' || type == "unit") {
-
-                ownunit = data.ownIds || [];
-                var uniqueUnit;
-                var isUnique = false;
-
-                var g = function(units, isall) {
-                    var nodes = [];
-                    units.forEach(function(unit) {
-                        var node = {
-                            text: unit.name,
-                            data: unit
-                        };
-
-                        if (defaultValue && defaultValue == unit.id) {
-                            current = unit;
-                        }
-
-                        if (ownunit.length == 1 && ownunit[0] == unit.id) {
-                            uniqueUnit = unit;
-                        }
-
-                        if (unit.children) {
-                            node.nodes = g(unit.children,isall);
-                            if (node.nodes.length == 0) {
-                                node.nodes = null;
-                            }
-                        }
-                        nodes.push(node);
-                    });
-
-                    if (!isall) {
-                        nodes = $.grep(nodes, function(n, i) {
-                            if (!n.nodes || n.nodes.length == 0) {
-                                return $.inArray(n.data.id, ownunit) != -1;
-                            }
-                            return true;
-                        });
-                    }
-
-                    return nodes;
-                }
-
-                if (data.agency) {
-                    treedata = g(data.agency, true);
-                    isAgency = true;
-                } else if (data.departments) {
-                    treedata = g(data.departments, false);
-
-                    if (!current && required && ownunit.length == 1) {
-                        // 如果必填并且只有一个值，默认填入
-                        current = uniqueUnit;
-                        isUnique = true;
-                    }
-                }
-            } else if (type == "agency") {
-                treedata = [];
-
-                data.forEach(function(a) {
-
-                    treedata.push({
-                        text: a.name,
-                        data: a.id
-                    });
-
-                    if (defaultValue && defaultValue == a.id) {
-                        current = a;
-                    }
-                });
-
-                if (!current && required && data.length == 1) {
-                    // 如果必填并且只有一个值，默认填入
-                    current = data[0];
-                    isUnique = true;
-                }
-            }
-
-            that.setCurrent(current);
-
-            that.removeBtn.on("click", function() {
-                that.setCurrent(null);
-            });
-
-            that.input.click(function() {
-
-                layer.open({
-                    type: 1,
-                    title: "单位",
-                    content: "<div class='tonto-unit-check-div'></div>",
-                    area: ['350px', '460px'],
-                    success: function(layero, index) {
-                        $tree = $(layero).find('.tonto-unit-check-div');
-
-                        $tree.treeview({
-                            data: treedata,
-                            levels: 2
-                        });
-
-                        $tree.on('nodeSelected', function(event, data) {
-
-                            var item = data.data;
-
-                            if (type == "department") {
-                                if (!item.parentId) {
-                                    $.infoMessage("请选择一个科室");
-                                    return;
-                                } else {
-                                    if (!isAgency && ($.inArray(item.id, ownunit) == -1)) {
-                                        $.infoMessage("您不能选择该科室");
-                                        return;
-                                    }
-                                }
-                            } else if (type == "unit") {
-                                if (!isAgency && ($.inArray(item.id, ownunit) == -1)) {
-                                    $.infoMessage("您不能选择该科室");
-                                    return;
-                                }
-                            } else if (type == "agency") {
-                                item = {
-                                    id: item,
-                                    name: data.text
-                                }
-                            }
-
-                            that.setCurrent(item);
-                            layer.close(index);
-                        });
-                    }
-                });
-            });
-        },
-        loadData: function(url) {
-            var that = this;
-            if (!url) {
-                url = (that.type == 'agency') ? "/org/unit/own/agency" : "/org/unit/own/department";
-            }
-            $.postAjax(url, function(data) {
-                that.setData(data);
-            });
-        }
-    }
-
-
-    $input[0].unitComponment = com;
-
-    return com;
-}
-
-
-/**
- * 自动加载初始化单位选择表单控件 <class = tonto-select-unit>
- */
-function _initUnitComponment(container) {
-
-    /**
-     * 获取UNIT控件
-     */
-    $.extend($.fn, {
-        getUnitComponment: function() {
-            return $(this)[0].unitComponment;
-        }
-    });
-
-    var _tonto_depart = container ? $(container).find(".tonto-select-department") : $(".tonto-select-department");
-    var _tonto_agencys = container ? $(container).find(".tonto-select-agency") : $(".tonto-select-agency");
-    var _tonto_units = container ? $(container).find(".tonto-select-unit") : $(".tonto-select-unit");
-
-    if (_tonto_units.length > 0) {
-        var coms1 = [];
-        for (var i = 0; i < _tonto_units.length; i++) {
-            coms1.push(_createUnitComponment(_tonto_units[i], "unit"));
-        }
-        $.postAjax("/org/unit/own/department", function(data) {
-            for (i = 0; i < coms1.length; i++) {
-                coms1[i].setData(data);
-            }
-        });
-    }
-
-    if (_tonto_depart.length > 0) {
-        var coms2 = [];
-        for (var i = 0; i < _tonto_depart.length; i++) {
-            coms2.push(_createUnitComponment(_tonto_depart[i], "department"));
-        }
-        $.postAjax("/org/unit/own/department", function(data) {
-            for (i = 0; i < coms2.length; i++) {
-                coms2[i].setData(data);
-            }
-        });
-    }
-
-    if (_tonto_agencys.length > 0) {
-        var coms3 = [];
-        for (var i = 0; i < _tonto_agencys.length; i++) {
-            coms3.push(_createUnitComponment(_tonto_agencys[i], "agency"));
-        }
-        $.postAjax("/org/unit/own/agency", function(data) {
-            for (i = 0; i < coms3.length; i++) {
-                coms3[i].setData(data);
-            }
-        });
-    }
-
-}
-
-
-/**
- * 创建考评周期选择控件
- */
-function _createAssessCycleComponment(input, _options, callback) {
-
-    var options = {
-        type: 1
-    }
-
-    if (typeof _options == 'function') {
-        callback = _options;
-    } else if (typeof _options == 'object') {
-        $.extend(options, _options);
-    } else {
-        options.type = _options * 1;
-    }
-
-    var $input = $(input);
-    var required = ($input.hasClass("required") || $input.attr("required") == "required");
-    var $wrap = $('<div class="input-group"/>');
-    var name = $input.attr("name") || $input.attr("id");
-    $input.attr("name", "_" + name);
-    var $hideinput = $('<input type="text" style="display:none" name="' + name + '"  />');
-    var $removeBtn = required ? $('<span class="input-group-addon" style="cursor:pointer"><i class="glyphicon glyphicon-chevron-down"> </i></span> ') :
-        $('<span class="input-group-addon" style="cursor:pointer"><i class="glyphicon glyphicon-remove"> </i></span> ');
-    var defaultValue = $input.attr("cycleid");
-    var defaultName = $input.attr("cyclename");
-    var userId = options.userId || $input.attr("userId");
-    var unitId = options.unitId || $input.attr("unitId");
-    var type = options.type;
-
-
-    if (!callback && !(typeof callback == 'function')) {
-        callback = $input.attr("assess-cycle-callback");
-        callback = callback ? $.getWindowFunction(callback) : null;
-    }
-
-    $input.attr("readonly", true);
-    $input.css("background", "#fff");
-
-    $input.wrap($wrap);
-    $input.after($removeBtn);
-    $input.after($hideinput);
-
-    var content = '<section class="tonto-layer-div content table-content">' +
-        '    <table id="_tontoCycleTable" class="table table-hover"></table>' +
-        '    <div style="width:200px" id="_tontoCycleTableTooler">' +
-        //(type == 4 ? '        <input type="text" class="form-control tonto-select-agency" required="required" name="unitId" placeholder="请选择机构"></input>':'') +
-        '    </div>' +
-        '</section>';
-
-    var com = {
-        input: $input,
-        callback: callback,
-        removeBtn: $removeBtn,
-        required: required,
-        content: content,
-        name: name,
-        userId: userId,
-        unitId: unitId,
-        type: options.type,
-        valueInput: $hideinput,
-        setCurrent: function(row) {
-            var that = this;
-            if (row) {
-                that.input.val(row.cycleName);
-                that.valueInput.val(row.id);
-            } else {
-                that.input.val("");
-                that.valueInput.val("");
-            }
-
-            if (that.callback)
-                that.callback(row);
-        },
-        open: function() {
-
-            var that = this;
-            that.first = true;
-            var type = that.type;
-
-            layer.open({
-                type: 1,
-                title: ' ',
-                maxmin: true, //开启最大化最小化按钮
-                content: that.content,
-                area: ['800px', '600px'],
-                success: function(layero, index) {
-
-                    var url = '/console/asscyc/select/' + (type == 1 ? 'self' : (type == 2 ? 'user' : (type == 3 ? 'unit' : (type == 4 ? 'assess' : 'selfenabled'))));
-
-                    /*
-                     * 如果是个人的 self=true,则应该查找自己所在机构的数据
-                     */
-
-                    that.table = $.createTable("#_tontoCycleTable", {
-                        idField: "id",
-                        columns: [
-                            [
-                                { title: "单位名称", field: "unitName" },
-                                { title: "周期名称", field: "cycleName" },
-                                { title: "考评类型", field: "assessType", formatter: function(value, row) { return value == "1" ? "年中测评" : "年终考评" } },
-                                { title: "周期状态", field: "cycleState", formatter: function(value, row) { return value == "1" ? "启用" :(value == "2" ? "暂存" : ( value == "4" ? "停用" : "归档"))}},
-                                { title: "周期开始时间", field: "cycleStartTime", formatter: "date" },
-                                { title: "周期截止时间", field: "cycleEndTime", formatter: "date" }
-                            ]
-                        ],
-                        url: url,
-                        searchbar: type == 4 ? '#_tontoCycleTableTooler' : null,
-                        sortName: 'createTime',
-                        sortOrder: 'desc',
-                        pagination: true,
-                        toolbar: "#_tontoCycleTableTooler",
-                        showRefresh: true,
-                        onClickRow: function(row, element) {
-                            com.setCurrent(row);
-                            layer.close(index);
-                        }
-                    });
-
-                    var unitInput = $(layero).find('[name="unitId"]');
-                    // if (type == 4) {
-                    //     // $.getAjax("/org/unit/self/agency", function(data) {
-                    //     //     unitInput.attr("readonly", true);
-                    //     //     unitInput.val(data.name);
-                    //     // })
-
-                    //     _createUnitComponment(unitInput, "agency", function() {
-                    //         if (that.first) {
-                    //             that.first = false;
-                    //         } else {
-                    //             that.table.refresh();
-                    //         }
-                    //     }).loadData();
-                    // }
-                }
-            });
-        }
-    }
-
-    $input.click(function() {
-        com.open();
-    });
-
-    $removeBtn.on("click", function() {
-        if (required) {
-            com.open();
-        } else {
-            com.setCurrent(null);
-        }
-
-    });
-
-    if (defaultValue) {
-        if (defaultName) {
-            com.setCurrent({
-                cycleName: defaultName,
-                id: defaultValue
-            });
-        } else {
-            $.getAjax("/console/asscyc/get?id=" + defaultValue, function(data) {
-                com.setCurrent(data);
-                com.defaultValue = data;
-            });
-        }
-    }
-
-
-
-    $input[0].cycleComponment = com;
-
-    return com;
-}
-
-/**
- * 自动加载初始化考评周期选择表单控件 <class = tonto-select-assess-cycle>
- */
-function _initAssessCycleComponment() {
-    $(".tonto-select-assess-cycle").each(function() {
-        _createAssessCycleComponment($(this), 4);
-    });
-
-    $(".tonto-select-assess-cycle-self").each(function() {
-        _createAssessCycleComponment($(this), 1);
-    });
-
-    $(".tonto-select-assess-cycle-user").each(function() {
-        _createAssessCycleComponment($(this), 2);
-    });
-
-    $(".tonto-select-assess-cycle-unit").each(function() {
-        _createAssessCycleComponment($(this), 3);
-    });
-    
-    $(".tonto-select-assess-cycle-self-enabled").each(function() {
-        _createAssessCycleComponment($(this), 5);
-    });
-}
-
-
-/**
  * 加载form表单验证 <class = tonto-form-validate>
  */
-function _initForm(container) {
-
-    /**
-     * 与ajax-form-submit结合处理子窗口提交form后回调（例如关闭子窗口并刷新父窗口表格）
-     */
-    $.extend({
-        setLayerSubmitHandler: function(layero, index, submitSuccess, msg) {
-            var forms = layer.getChildFrame('form', index);
-            if (forms && forms.length > 0) {
-                forms[0].layerSubmitHandler = function(data) {
-                    if (submitSuccess && typeof submitSuccess === 'function') {
-                        if (msg) {
-                            layer.msg(msg, { icon: 1 });
-                            submitSuccess(data);
-                        } else submitSuccess(data);
-                    }
-
-                };
-            }
-        }
-    });
-
-    $.fn.setFormSubmitHandler = function(submitSuccess, msg) {
-        var form = $(this);
-
-        if (typeof submitSuccess == 'string') {
-            form[0].submitHandler = function() {
-                $.infoMessage(submitSuccess);
-            }
-        }
-
-        if (msg) {
-            form[0].submitHandler = function(data) {
-                $.infoMessage(msg);
-                submitSuccess(data);
-            };
-        } else {
-            form[0].submitHandler = submitSuccess;
-        }
-
-
-    };
+function _initForm(container, formOptions) {
 
     var forms = container ? $(container).find(".tonto-form-validate") : $(".tonto-form-validate");
+
     forms.each(function() {
-        var $submitForm = $(this);
+        var submitForm = $(this);
 
-        var $submitBtn = $submitForm.find('button[type="submit"],input[type="submit"]')
+        var submitBtn = submitForm.find('button[type="submit"],input[type="submit"]')
 
-        $submitBtn.each(function() {
+        submitBtn.each(function() {
             var that = $(this);
             that.on('click', function(e) {
                 if (that.data("loading")) {
@@ -1517,7 +958,7 @@ function _initForm(container) {
                 }
                 // ie处理placeholder提交问题
                 if ($.browser && $.browser.msie) {
-                    $submitForm.find('[placeholder]').each(function() {
+                    submitForm.find('[placeholder]').each(function() {
                         var $input = $(this);
                         if ($input.val() == $input.attr('placeholder')) {
                             $input.val('');
@@ -1541,40 +982,39 @@ function _initForm(container) {
             // 给未通过验证的元素加效果,闪烁等
             // highlight : false,
             showErrors: function(errorMap, errorList) {
-                var msg = "";
                 $.each(errorList, function(i, v) {
-                    //msg += (v.message + "\r\n");
                     //在此处用了layer的方法,显示效果更美观
                     layer.tips(v.message, v.element, { time: 2000, tips: [3, 'red'] });
                     return false;
                 });
             },
-            submitHandler: function(form) {
-                var $form = $(form);
-                $form.ajaxSubmit({
-                    url: $submitBtn.data('action') ? $submitBtn.data('action') : $form.attr('action'),
+            submitHandler: function(a) {
+                var form = $(a);
+                form.ajaxSubmit({
+                    url: submitBtn.data('action') ? submitBtn.data('action') : form.attr('action'),
                     dataType: 'json',
                     beforeSubmit: function(arr, $form, options) {
-                        $submitBtn.each(function() {
+                        submitBtn.each(function() {
                             var that = $(this);
                             that.data("loading", true);
                             var text = that.text();
+                            that.data("orginText", text);
                             that.text(text + '中...').prop('disabled', true).addClass('disabled');
                         });
                     },
                     success: function(data) {
 
-                        $submitBtn.each(function() {
+                        submitBtn.each(function() {
                             var that = $(this);
                             var text = that.text();
-                            that.removeClass('disabled').prop('disabled', false).text(text.replace('中...', '')).parent().find('span').remove();
+                            that.removeClass('disabled').prop('disabled', false).text(that.data("orginText"));
                         });
 
                         var resStatus = data.status,
                             status = _RESPONSE_STATUS;
 
                         if (status.NO_LOGIN === resStatus) {
-                            $.errorMessage("请先登录");
+                            ajaxUnLoginHandler(form.data("submitSuccessHandler"));
                         } else if (status.NO_PERMISSION === resStatus) {
                             $.errorMessage(data.message || "您没有权限访问该页面或执行该操作");
                         } else if (status.ERROR === resStatus) {
@@ -1593,13 +1033,9 @@ function _initForm(container) {
                                 });
                             }
                         } else if (status.SUCCESS === resStatus) {
-                            if ($form[0].layerSubmitHandler) {
-                                $form[0].layerSubmitHandler(data.result ? data.result : data);
-                                return;
-                            }
-                            if ($form[0].submitHandler) {
-                                $form[0].submitHandler(data.result ? data.result : data);
-                                return;
+                            var handler = form.data("submitSuccessHandler");
+                            if (handler) {
+                                handler(data.result ? data.result : data);
                             }
                         }
                     },
@@ -1607,26 +1043,26 @@ function _initForm(container) {
                         $.errorMessage("系统异常");
                     },
                     complete: function() {
-                        $submitBtn.data("loading", false);
+                        submitBtn.data("loading", false);
                     }
                 });
             }
         };
 
-        if (window.validateFormConfig)
-            config = $.extend(config, window.validateFormConfig);
+        if (formOptions)
+            config = $.extend(config, formOptions);
 
-        var backurl = $submitForm.attr("callback-url");
-        if (backurl && !$submitForm[0].submitHandler) {
-            $submitForm.setFormSubmitHandler(function() {
+        var backurl = submitForm.attr("callback-url");
+
+        if (backurl && !submitForm.data("submitSuccessHandler")) {
+            submitForm.setFormSubmitHandler(function() {
                 layer.alert("操作成功", function(index) {
                     layer.close(index);
                     window.location = backurl;
-                })
+                });
             });
         }
 
-        var validater = $submitForm.createFormValidate(config);
-        $submitForm[0].validater = validater;
+        submitForm.createFormValidater(config);
     });
 }

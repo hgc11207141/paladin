@@ -201,6 +201,9 @@ public class ShiroConfiguration {
 		sessionManager.setDeleteInvalidSessions(true);
 		// 是否开启 检测，默认开启
 		sessionManager.setSessionValidationSchedulerEnabled(true);
+		
+		// 是否在url上显示检索得到的sessionid
+		sessionManager.setSessionIdUrlRewritingEnabled(true);
 
 		return sessionManager;
 	}
