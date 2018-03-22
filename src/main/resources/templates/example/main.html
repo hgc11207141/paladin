@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Paladin Main</title>
+    <link rel="stylesheet" href="/static/assets/bootstrap3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/assets/bootstrap-table/bootstrap-table.min.css" />
+    <script type="text/javascript" src="/static/assets/jquery/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript" src="/static/assets/bootstrap3/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/assets/bootstrap-table/bootstrap-table.min.js"></script>
+    <script type="text/javascript" src="/static/assets/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+    <script type="text/javascript" src="/static/assets/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/static/assets/jquery-validation/localization/messages_zh.min.js"></script>
+    <script type="text/javascript" src="/static/js/common.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Paladin</a>
+                </div> 
+                <div class="navbar-btn navbar-right">
+                	<a href="/logout" class="btn btn-default btn-flat">注销</a>
+            	</div>               
+            </div>
+            
+        </nav>
+    <div class="container">
+        
+        <div class="row">
+            <fieldset>
+                <legend>查询</legend>
+                <form id="searchbar" class="form-horizontal">
+                    <div class="form-group">
+                        <label for="name" class="col-xs-2 control-label">姓名</label>
+                        <div class="col-xs-2">
+                            <input type="text" name="name" class="form-control" />
+                        </div>
+                        <div class="col-xs-8">
+                            <div class="pull-right">
+                                <button type="button" onclick="table.refresh()" class="btn btn-default">查询</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </fieldset>
+        </div>
+        <div class="row">
+            <fieldset>
+                <legend>结果</legend>
+                <table id="dataGrid"></table>
+                <div id="toolbar">
+                    <div class="btn-group">
+                        <button onclick="view()" class="btn btn-default"><i class="glyphicon glyphicon-search"></i>查看</button>
+                        <button onclick="add()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>新增</button>
+                        <button onclick="edit()" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i>修改</button>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+var table;
+$(function() {
+    initDataGrid();
+});
+
+function initDataGrid(enumMap) {
+
+    table = $.createTable("#dataGrid", {
+        idField: "id",
+        columns: [
+            [
+                { radio: true },
+                { title: "姓名", field: "name", sortable: true },
+                { title: "系统账号", field: "account" },
+                { title: "建档时间", field: "recordCreateTime", formatter: "date" }
+            ]
+        ],
+        url: '/search',
+        searchbar: '#searchbar',
+        sortName: 'name',
+        showColumns: true,
+        sortOrder: 'asc',
+        pagination: true,
+        clickToSelect: true,
+        toolbar: "#toolbar",
+        showRefresh: true
+    });
+}
+</script>
+
+</html>
