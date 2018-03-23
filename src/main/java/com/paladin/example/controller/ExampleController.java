@@ -77,6 +77,12 @@ public class ExampleController {
 		return "/example/edit";
 	}
 	
+	@RequestMapping(value = "/save")
+	@ResponseBody
+	public Object save(Model model) {	
+		return CommonResponse.getSuccessResponse();
+	}
+	
 	
 	@RequestMapping(value ="/system/constants/enum")
 	@ResponseBody

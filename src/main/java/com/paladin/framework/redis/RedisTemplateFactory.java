@@ -3,16 +3,16 @@ package com.paladin.framework.redis;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 /**
  * 方便使用redis-template的工厂类
  * @author TontoZhou
  * @since 2018年3月16日
  */
-@Configuration
+@Component
 public class RedisTemplateFactory {
 
 	@Resource

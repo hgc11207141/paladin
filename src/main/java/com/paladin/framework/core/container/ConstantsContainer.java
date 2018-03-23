@@ -20,7 +20,7 @@ public class ConstantsContainer implements VersionContainer{
 		
 		List<KeyValue> sexTypes = new ArrayList<>();
 		sexTypes.add(new KeyValue("1", "男"));
-		sexTypes.add(new KeyValue("0", "女"));
+		sexTypes.add(new KeyValue("2", "女"));
 		enumConstantMap.put("sex-type", sexTypes);
 		
 		List<KeyValue> booleanTypes = new ArrayList<>();

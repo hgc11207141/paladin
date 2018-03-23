@@ -42,7 +42,7 @@
                 <div id="toolbar">
                     <div class="btn-group">
                         <button onclick="view()" class="btn btn-default"><i class="glyphicon glyphicon-search"></i>查看</button>
-                        <button onclick="add()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>新增</button>
+                        <button onclick="edit()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>新增</button>
                         <button onclick="edit()" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i>修改</button>
                     </div>
                 </div>
@@ -80,6 +80,37 @@ function initDataGrid(enumMap) {
         showRefresh: true
     });
 }
+
+function getSelectRow() {
+    var rows = table.getSelections();
+    return rows.length>0?rows[0]:null;
+}
+
+function edit(){
+		
+	var row = getSelectRow();
+	
+	if (row) {
+		 layer.open({
+	         type: 2,
+	         title: ' ',
+	         maxmin: true, //开启最大化最小化按钮
+	         area: ['770px', '750px'],
+	         content: '/edit/input?id=' + row.id,
+	         success: function(layero, index) {       	 
+	        	 $.setLayerSubmitHandler(layero, index, function(){      		 
+	        		 layer.close(index);
+	                 table.refresh(); 
+	        	 }, "保存成功");
+	         }
+	     });
+	} else {
+		$.errorMessage("请选中一条业务数据！");
+	}
+	
+	
+}
+
 </script>
 
 </html>

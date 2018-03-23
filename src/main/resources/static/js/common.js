@@ -31,13 +31,13 @@
         formatDate: function(date, format) {
 
             var o = {
-                "M+": date.getMonth() + 1, //month
-                "d+": date.getDate(), //day
-                "h+": date.getHours(), //hour
-                "m+": date.getMinutes(), //minute
-                "s+": date.getSeconds(), //second
-                "q+": Math.floor((date.getMonth() + 3) / 3), //quarter
-                "S": date.getMilliseconds() //millisecond
+                "M+": date.getMonth() + 1, // month
+                "d+": date.getDate(), // day
+                "h+": date.getHours(), // hour
+                "m+": date.getMinutes(), // minute
+                "s+": date.getSeconds(), // second
+                "q+": Math.floor((date.getMonth() + 3) / 3), // quarter
+                "S": date.getMilliseconds() // millisecond
             }
             if (/(y+)/.test(format)) format = format.replace(RegExp.$1,
                 (date.getFullYear() + "").substr(4 - RegExp.$1.length));
@@ -231,7 +231,7 @@
 
     // ------------------------------------------
     //
-    //          常用业务控件和方法
+    // 常用业务控件和方法
     //
     // -----------------------------------------
 
@@ -251,9 +251,9 @@ function _initValidator() {
 
     // this.optional(element) 指定了表单不为空才判断
 
-    //自然数
+    // 自然数
     $.validator.addMethod("naturalNumber", function(value, element) { return this.optional(element) || (/^[1-9]\d{0,9}$/.test(value)); }, "请输入大于0小于9999999999的整数");
-    //身份证
+    // 身份证
     $.validator.addMethod("identity", function(value, element) {
         var id = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
 
@@ -268,16 +268,16 @@ function _initValidator() {
 
         return this.optional(element) || (date.getFullYear() == y && date.getMonth() == m && date.getDate() == d);
     }, "身份证格式错误");
-    //邮编
+    // 邮编
     $.validator.addMethod("zip", function(value, element) { return this.optional(element) || (/^[0-9]\d{5}$/.test(value)); }, "邮编格式错误");
-    //账号
+    // 账号
     $.validator.addMethod("account", function(value, element) { return this.optional(element) || (/^\w{5,30}$/.test(value)); }, "账号格式错误");
-    //手机
+    // 手机
     $.validator.addMethod("cellphone", function(value, element) { return this.optional(element) || (/^1[3|5|7|8|]\d{9}$/.test(value)); }, "手机号码格式错误");
-    //电话（包括手机和座机）
+    // 电话（包括手机和座机）
     $.validator.addMethod("phone", function(value, element) { return this.optional(element) || (/((^\d{3,4}-?)?\d{7,8}$)|(^1[3|5|7|8|]\d{9}$)/.test(value)); }, "电话号码格式错误");
 
-    //日期
+    // 日期
     $.validator.addMethod("date", function(value, element) {
         var r = value.match(/^(\d{1,4})(-|\/)(\d{1,2})\2(\d{1,2})$/);
         if (r == null)
@@ -287,7 +287,7 @@ function _initValidator() {
         return this.optional(element) || (d.getFullYear() == r[1] && (d.getMonth() + 1) == r[3] && d.getDate() == r[4]);
     }, "日期格式不正确");
 
-    //大于
+    // 大于
     $.validator.addMethod("largeThan", function(value, element, $name) {
         if ($name) {
             var minVal = $($name).val();
@@ -597,8 +597,8 @@ function _initTable() {
                     var idArr = [];
                     data.forEach(function(item) {
                         item.parentId = item[options.treeParentField];
-                        //如果支持搜索，则会有部分父节点没搜索出来（当然你可以只查询过滤叶节点），
-                        //在这里会把没有父节点的节点parentId = null，因而造成数据可能会不完整，使用时候注意
+                        // 如果支持搜索，则会有部分父节点没搜索出来（当然你可以只查询过滤叶节点），
+                        // 在这里会把没有父节点的节点parentId = null，因而造成数据可能会不完整，使用时候注意
                         if (options.treeParentFilter && item.parentId) {
                             var treeId = options.treeId || defaultOptions.treeId;
                             var b = false;
@@ -668,7 +668,7 @@ function _initTable() {
             return tables.length == 1 ? tables[0] : tables;
         },
         /**
-         * 获取常量formatter方法，用于bootstrap table column         * 
+         * 获取常量formatter方法，用于bootstrap table column *
          */
         getEnumColumnFormatter: function(enumTypeMap, type) {
             if (enumTypeMap && type) {
@@ -731,47 +731,47 @@ function _initTable() {
 
         param[name] = value;
     };
-    
+
     // 页码本地化
 
     $.fn.bootstrapTable.locales['zh-CN'] = {
-        formatLoadingMessage: function () {
+        formatLoadingMessage: function() {
             return '正在努力地加载数据中，请稍候……';
         },
-        formatRecordsPerPage: function (pageNumber) {
+        formatRecordsPerPage: function(pageNumber) {
             return pageNumber;
         },
-        formatShowingRows: function (pageFrom, pageTo, totalRows) {
+        formatShowingRows: function(pageFrom, pageTo, totalRows) {
             return '显示' + pageFrom + ' - ' + pageTo + '条 ，共 ' + totalRows + ' 条';
         },
-        formatSearch: function () {
+        formatSearch: function() {
             return '搜索';
         },
-        formatNoMatches: function () {
+        formatNoMatches: function() {
             return '没有找到匹配的记录';
         },
-        formatPaginationSwitch: function () {
+        formatPaginationSwitch: function() {
             return '隐藏/显示分页';
         },
-        formatRefresh: function () {
+        formatRefresh: function() {
             return '刷新';
         },
-        formatToggle: function () {
+        formatToggle: function() {
             return '切换';
         },
-        formatColumns: function () {
+        formatColumns: function() {
             return '列';
         },
-        formatExport: function () {
+        formatExport: function() {
             return '导出数据';
         },
-        formatClearFilters: function () {
+        formatClearFilters: function() {
             return '清空过滤';
         }
     };
 
     $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN']);
-    
+
 }
 
 
@@ -943,6 +943,52 @@ function _initEnumConstant(container) {
  */
 function _initForm(container, formOptions) {
 
+
+    /**
+     * 与ajax-form-submit结合处理子窗口提交form后回调（例如关闭子窗口并刷新父窗口表格）
+     */
+    $.extend({
+        setLayerSubmitHandler: function(layero, index, submitSuccess, msg) {
+            var forms = layer.getChildFrame('form', index);
+            if (forms && forms.length > 0) {
+                forms.each(function() {
+                    $(this)[0].submitSuccessHandler = function(data) {
+
+                        if (typeof submitSuccess == 'string') {
+                            msg = submitSuccess;
+                            submitSuccess = null;
+                        }
+
+                        if (msg) {
+                            $.successMessage(msg);
+                        }
+                        if (submitSuccess) {
+                            submitSuccess(data);
+                        }
+                    };
+                });
+            }
+        }
+    });
+
+    $.fn.setFormSubmitHandler = function(submitSuccess, msg) {
+        var form = $(this);
+
+        if (typeof submitSuccess == 'string') {
+            msg = submitSuccess;
+            submitSuccess = null;
+        }
+
+        form[0].submitSuccessHandler = function(data) {
+            if (msg) {
+                $.successMessage(msg);
+            }
+            if (submitSuccess) {
+                submitSuccess(data);
+            }
+        };
+    };
+
     var forms = container ? $(container).find(".tonto-form-validate") : $(".tonto-form-validate");
 
     forms.each(function() {
@@ -983,7 +1029,7 @@ function _initForm(container, formOptions) {
             // highlight : false,
             showErrors: function(errorMap, errorList) {
                 $.each(errorList, function(i, v) {
-                    //在此处用了layer的方法,显示效果更美观
+                    // 在此处用了layer的方法,显示效果更美观
                     layer.tips(v.message, v.element, { time: 2000, tips: [3, 'red'] });
                     return false;
                 });
@@ -1033,7 +1079,7 @@ function _initForm(container, formOptions) {
                                 });
                             }
                         } else if (status.SUCCESS === resStatus) {
-                            var handler = form.data("submitSuccessHandler");
+                            var handler = form[0].submitSuccessHandler || form.data("submitSuccessHandler");
                             if (handler) {
                                 handler(data.result ? data.result : data);
                             }
@@ -1054,7 +1100,7 @@ function _initForm(container, formOptions) {
 
         var backurl = submitForm.attr("callback-url");
 
-        if (backurl && !submitForm.data("submitSuccessHandler")) {
+        if (backurl && !(form[0].submitSuccessHandler || form.data("submitSuccessHandler"))) {
             submitForm.setFormSubmitHandler(function() {
                 layer.alert("操作成功", function(index) {
                     layer.close(index);

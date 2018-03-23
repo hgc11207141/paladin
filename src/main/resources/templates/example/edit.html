@@ -4,7 +4,8 @@
 
 <body>
     <div class="container">
-        <form class="form-horizontal tonto-form-validate" id="userForm" action="/example/save" method="post" th:object="${user}">
+    	<div style="padding:20px">
+        <form class="form-horizontal tonto-form-validate" id="userForm" action="/save" method="post" th:object="${user}">
             <div class="form-group">
                 <label for="name" class="col-sm-2 control-label">姓名</label>
                 <div class="col-sm-3">
@@ -14,17 +15,7 @@
                 <div class="col-sm-3">
                     <select name="sex" class="form-control tonto-select-constant" required="required" enumcode="sex-type" th:attr="selectedvalue=${user.sex}"></select>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="nation" class="col-sm-2 control-label">民族</label>
-                <div class="col-sm-3">
-                    <select name="nation" class="form-control tonto-select-constant" required="required" enumcode="nation-type" th:attr="selectedvalue=${user.nation}"></select>
-                </div>
-                <label for="partisan" class="col-sm-2 control-label">党派</label>
-                <div class="col-sm-3">
-                    <select name="partisan" class="form-control tonto-select-constant" enumcode="partisan-type" th:attr="selectedvalue=${user.partisan}"></select>
-                </div>
-            </div>
+            </div>        
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-2">
                     <button type="submit" class="btn btn-primary">提交</button>
@@ -33,6 +24,7 @@
                 </div>
             </div>
         </form>
+        </div>
     </div>
     <div th:include="footer"></div>
 </body>
