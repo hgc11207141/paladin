@@ -47,8 +47,8 @@ public class SysUserRealm extends AuthorizingRealm {
 		
 		// 加密方式;
 		// 交给AuthenticatingRealm使用CredentialsMatcher进行密码匹配，如果觉得人家的不好可以自定义实现
-		SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(userSession, "a77a2c17d818fad03d6e60735dc014b6", // 密码
-				ByteSource.Util.bytes("d2aa98e7ed30798196660e42e6eb1945"), // salt
+		SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(userSession, "0e01efd04e502e317144b6d61d3e16cc", // 密码
+				ByteSource.Util.bytes("9c16cb96cb117c2146be23d64a435ce1"), // salt
 				username // realm name
 		);
 

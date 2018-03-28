@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.paladin.example.controller.pojo.ExampleQuery;
+import com.paladin.example.mapper.OrgUserExtMapper;
 import com.paladin.example.model.OrgUser;
-import com.paladin.example.service.ExampleService;
+import com.paladin.example.service.ExampleUserService;
 import com.paladin.framework.common.PageResult;
 import com.paladin.framework.core.container.ConstantsContainer;
 import com.paladin.framework.utils.WebUtil;
@@ -27,7 +30,10 @@ import com.paladin.framework.web.response.CommonResponse;
 public class ExampleController {
 	
 	@Autowired
-	ExampleService exampleService;
+	ExampleUserService exampleUserService;
+	
+	@Autowired
+	OrgUserExtMapper userExtMapper;
 	
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public Object loginInput(HttpServletRequest request, HttpServletResponse response) {		
@@ -64,15 +70,26 @@ public class ExampleController {
 		return "/example/main";
 	}
 	
+//	@RequestMapping("/search")
+//	@ResponseBody
+//	public Object getPage(ExampleQuery query) {
+//		return CommonResponse.getSuccessResponse(new PageResult(exampleService.searchPage(query)));
+//	}
+	
 	@RequestMapping("/search")
 	@ResponseBody
 	public Object getPage(ExampleQuery query) {
-		return CommonResponse.getSuccessResponse(new PageResult(exampleService.searchPage(query)));
+		
+		Page<?> pager = PageHelper.offsetPage(0, 10);
+		userExtMapper.selectJoinAll();
+		
+		return CommonResponse.getSuccessResponse(new PageResult(pager));
+		//return CommonResponse.getSuccessResponse(new PageResult(exampleUserService.searchPage(query)));
 	}
 	
 	@RequestMapping(value = "/edit/input")
 	public Object editInput(@RequestParam String id, Model model) {	
-		OrgUser user = exampleService.get(id);
+		OrgUser user = exampleUserService.get(id);
 		model.addAttribute("user", user);
 		return "/example/edit";
 	}

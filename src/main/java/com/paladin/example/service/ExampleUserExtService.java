@@ -2,11 +2,10 @@ package com.paladin.example.service;
 
 import org.springframework.stereotype.Service;
 
-import com.paladin.example.model.OrgUser;
+import com.paladin.example.model.OrgUserExt;
 import com.paladin.framework.core.ServiceSupport;
 
-@Service
-public class ExampleService extends ServiceSupport<OrgUser>{
-	
-	
+
+public class ExampleUserExtService extends ServiceSupport<OrgUserExt>{
+
 }

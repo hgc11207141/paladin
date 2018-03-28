@@ -1,25 +1,23 @@
 package com.paladin.framework.exception;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paladin.framework.utils.WebUtil;
 import com.paladin.framework.web.response.CommonResponse;
 
-
 @Component
-public class ExceptionHandler extends ExceptionHandlerExceptionResolver {
+public class ExceptionHandler implements HandlerExceptionResolver {
 
+	private static Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
+	
 	private String defaultErrorView;
 
 	public String getDefaultErrorView() {
@@ -28,33 +26,6 @@ public class ExceptionHandler extends ExceptionHandlerExceptionResolver {
 
 	public void setDefaultErrorView(String defaultErrorView) {
 		this.defaultErrorView = defaultErrorView;
-	}
-
-	@Override
-	protected ModelAndView doResolveHandlerMethodException(HttpServletRequest request, HttpServletResponse response,
-			HandlerMethod handlerMethod, Exception ex) {
-
-		String page = null;
-		CommonResponse responseObject = null;
-		
-		if(ex instanceof BusinessException) {
-			responseObject = CommonResponse.getFailResponse(ex.getMessage());
-			page = "/business_error";
-		} else if(ex instanceof BusinessException) {
-			responseObject = CommonResponse.getErrorResponse(ex.getMessage());
-			page = "/system_error";
-		} else {
-			responseObject = CommonResponse.getErrorResponse("系统未知异常");
-			page = "/error";
-		}		
-		
-		if(WebUtil.isAjaxRequest(request)) {
-			sendJson(response, responseObject);
-		} else {
-			return new ModelAndView(page, "error", responseObject.getResult());
-		}
-		
-		return null;
 	}
 
 	private final static ObjectMapper objectMapper = new ObjectMapper();
@@ -66,15 +37,43 @@ public class ExceptionHandler extends ExceptionHandlerExceptionResolver {
 		response.setHeader("Cache-Control", "no-cache");
 
 		try {
-			objectMapper.writeValue(response.getWriter(), obj);
-		} catch (JsonGenerationException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+			objectMapper.writeValue(response.getOutputStream(), obj);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
 
+	@Override
+	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+		// 需要注释？
+		
+		String page = null;
+		CommonResponse responseObject = null;
+
+		if (ex instanceof BusinessException) {
+			responseObject = CommonResponse.getFailResponse(ex.getMessage());
+			page = "/business_error";
+		} else if (ex instanceof BusinessException) {
+			responseObject = CommonResponse.getErrorResponse(ex.getMessage());
+			page = "/system_error";
+		} else {
+			responseObject = CommonResponse.getErrorResponse("系统未知异常");
+			page = "/error";
+			
+			logger.error("系统未知异常",ex);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			ex.printStackTrace();
+		}
+
+		if (WebUtil.isAjaxRequest(request)) {
+			sendJson(response, responseObject);
+		} else {
+			return new ModelAndView(page, "error", responseObject.getResult());
+		}
+
+		return null;
 	}
 
 }
