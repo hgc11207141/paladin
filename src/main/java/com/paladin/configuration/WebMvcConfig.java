@@ -38,7 +38,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("forward:/main");
+        registry.addViewController("/").setViewName("forward:/face/main");
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);       
     } 
     

@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import com.paladin.framework.shiro.AjaxFormAuthenticationFilter;
-import com.paladin.framework.shiro.SysUserRealm;
+import com.paladin.health.core.SysUserRealm;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -49,7 +49,9 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * 
  * <h2>shiro配置</h2>
- * <p>修改了部分shiro的代码，从而提高效率，减少session的重复读取</p>
+ * <p>
+ * 修改了部分shiro的代码，从而提高效率，减少session的重复读取
+ * </p>
  * 
  * @author TontoZhou
  * @since 2018年3月21日
@@ -201,7 +203,7 @@ public class ShiroConfiguration {
 		sessionManager.setDeleteInvalidSessions(true);
 		// 是否开启 检测，默认开启
 		sessionManager.setSessionValidationSchedulerEnabled(true);
-		
+
 		// 是否在url上显示检索得到的sessionid
 		sessionManager.setSessionIdUrlRewritingEnabled(true);
 
@@ -230,10 +232,13 @@ public class ShiroConfiguration {
 	 * 初始化ShiroFilterFactoryBean的时候需要注入：SecurityManager Filter Chain定义说明
 	 * 1、一个URL可以配置多个Filter，使用逗号分隔 2、当设置多个过滤器时，全部验证通过，才视为通过 3、部分过滤器可指定参数，如perms，roles
 	 */
-	@Bean(name = "shirFilter")
+	@Bean(name = "shiroFilter")
 	public ShiroFilterFactoryBean shirFilter(DefaultWebSecurityManager securityManager) {
 		logger.debug("ShiroConfiguration.shirFilter()");
 
+		// ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
+
+		// 如果有shiro过滤有明确前缀，而不是默认的"\*"，则不需要改写shiro去手动排除某些请求 ShiroFilterFactoryBean
 		ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean() {
 			/*
 			 * 在请求进入shiro流程前，判断请求是否为静态资源，如果是则跳出shiro流程
@@ -281,13 +286,13 @@ public class ShiroConfiguration {
 						String requestUrl = httpRequest.getRequestURI();
 
 						// 过滤静态资源，防止静态资源读取session等操作
-						if (requestUrl.startsWith("/static/") || requestUrl.equals("/favicon.ico")) {
+						if (!requestUrl.startsWith("/manage/")) {
 							chain.doFilter(servletRequest, servletResponse);
 							return;
 						}
 					}
 					// -------------- add by TontoZhou -----------------
-					
+
 					super.doFilterInternal(servletRequest, servletResponse, chain);
 				}
 			}
@@ -297,9 +302,9 @@ public class ShiroConfiguration {
 		// 必须设置 SecurityManager
 		shiroFilterFactoryBean.setSecurityManager(securityManager);
 		// 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-		shiroFilterFactoryBean.setLoginUrl("/login");
+		shiroFilterFactoryBean.setLoginUrl("/manage/login");
 		// 登录成功后要跳转的链接
-		shiroFilterFactoryBean.setSuccessUrl("/main");
+		shiroFilterFactoryBean.setSuccessUrl("/manage/main");
 		// 未授权界面;
 		shiroFilterFactoryBean.setUnauthorizedUrl("/no_permission.html");
 
@@ -330,12 +335,11 @@ public class ShiroConfiguration {
 
 		// <!-- 过滤链定义，从上向下顺序执行，一般将 /**放在最为下边 -->:这是一个坑呢，一不小心代码就不好使了;
 		// <!-- authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问-->
-		filterChainDefinitionMap.put("/static/**", "anon");
-		filterChainDefinitionMap.put("/file/**", "anon");
-		filterChainDefinitionMap.put("/favicon.ico", "anon");
+		// filterChainDefinitionMap.put("/static/**", "anon");
+		// filterChainDefinitionMap.put("/file/**", "anon");
+		// filterChainDefinitionMap.put("/favicon.ico", "anon");
 
-		filterChainDefinitionMap.put("/logout", "logout");
-		filterChainDefinitionMap.put("/login/error", "anon");
+		filterChainDefinitionMap.put("/manage/logout", "logout");
 		// 配置记住我或认证通过可以访问的地址
 		filterChainDefinitionMap.put("/**", "authc");
 
@@ -343,6 +347,19 @@ public class ShiroConfiguration {
 
 		return shiroFilterFactoryBean;
 	}
+	
+//  该方法可以手动设置filter，从而修改shiro的urlpatterns，但是并没实现，还需要研究
+//	@SuppressWarnings({ "unchecked", "rawtypes" })
+//	@Bean
+//	public FilterRegistrationBean filterRegistrationBean() {
+//		FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
+//		filterRegistration.setFilter(new DelegatingFilterProxy("shiroFilter"));
+//		// 该值缺省为false,表示生命周期由SpringApplicationContext管理,设置为true则表示由ServletContainer管理
+//		// filterRegistration.addInitParameter("targetFilterLifecycle", "true");
+//		filterRegistration.setEnabled(true);
+//		filterRegistration.addUrlPatterns("/manage/*");// 可以自己灵活的定义很多，避免一些根本不需要被Shiro处理的请求被包含进来
+//		return filterRegistration;
+//	}
 
 	/**
 	 * Shiro默认提供了三种 AuthenticationStrategy 实现： AtLeastOneSuccessfulStrategy

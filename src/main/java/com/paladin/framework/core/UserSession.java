@@ -18,8 +18,10 @@ public class UserSession implements Serializable {
 	private static final long serialVersionUID = 7077877290125259117L;
 
 	
-	private String userId;
-	private String userName;
+	String userId;
+	String userName;
+	String account;
+	
 	
 	public UserSession(String userId, String userName) {
 		this.userId = userId;
@@ -45,5 +47,9 @@ public class UserSession implements Serializable {
 
 	public String getUserName() {
 		return userName;
+	}
+	
+	public String getAccount() {
+		return account;
 	}
 }

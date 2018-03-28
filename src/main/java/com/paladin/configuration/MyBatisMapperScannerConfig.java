@@ -24,7 +24,7 @@ public class MyBatisMapperScannerConfig {
 
 		MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
 		mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-		mapperScannerConfigurer.setBasePackage("com.paladin.example.mapper");
+		mapperScannerConfigurer.setBasePackage("com.paladin.health.mapper");
 
 		Properties mapperProperties = new Properties();
 		mapperProperties.setProperty("mappers", CustomMapper.class.getName() + "," + JoinMapper.class.getName());
