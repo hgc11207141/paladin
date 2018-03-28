@@ -41,6 +41,8 @@ import tk.mybatis.mapper.util.StringUtil;
  * 连接查询实现类
  * <p>暂时只实现了两表连接，如果要多表，或常量表连接等实现，待日后扩展</p>
  * 
+ * <p>修改思路：按照EntityColumn，EntityTable思路重写</p>
+ * 
  * @author TontoZhou
  * @since 2018年3月23日
  */
