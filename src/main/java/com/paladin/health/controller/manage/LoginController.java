@@ -26,11 +26,16 @@ public class LoginController extends ManageController {
 	@Autowired
 	SysUserService sysUserService;
 
+	@RequestMapping(value = "/index")
+	public Object index(HttpServletRequest request) {
+		return "/manage/index";
+	}
+
 	@RequestMapping(value = "/main")
 	public Object main(HttpServletRequest request) {
 		return "/manage/main";
 	}
-
+	
 	/**
 	 * 登录入口
 	 * @param request
@@ -46,7 +51,7 @@ public class LoginController extends ManageController {
 				WebUtil.sendJson(response, CommonResponse.getSuccessResponse("登录成功"));
 				return null;
 			} else {
-				return main(request);
+				return index(request);
 			}
 		}
 
