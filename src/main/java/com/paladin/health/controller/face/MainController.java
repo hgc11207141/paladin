@@ -13,7 +13,7 @@ public class MainController extends FaceController{
 	
 	@RequestMapping(value = "/main")
 	public Object main(HttpServletRequest request) {
-		return "/face/main";
+		return "/health/face/main";
 	}
 	
 }

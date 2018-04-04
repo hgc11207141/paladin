@@ -28,12 +28,12 @@ public class LoginController extends ManageController {
 
 	@RequestMapping(value = "/index")
 	public Object index(HttpServletRequest request) {
-		return "/manage/index";
+		return "/health/manage/index";
 	}
 
 	@RequestMapping(value = "/main")
 	public Object main(HttpServletRequest request) {
-		return "/manage/main";
+		return "/health/manage/main";
 	}
 	
 	/**
@@ -55,7 +55,7 @@ public class LoginController extends ManageController {
 			}
 		}
 
-		return "/manage/login";
+		return "/health/manage/login";
 	}
 
 	/**
