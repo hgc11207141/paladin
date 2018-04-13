@@ -13,6 +13,8 @@ public class DBConnection extends BaseModel{
 	
 	private String url;
 	
+	private String type;
+	
 	private String userName;
 	
 	private String password;
@@ -58,5 +60,15 @@ public class DBConnection extends BaseModel{
 	public void setNote(String note) {
 		this.note = note;
 	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+
 	
 }

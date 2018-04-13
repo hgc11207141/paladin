@@ -463,17 +463,17 @@ public abstract class ServiceSupport<Model> {
 		if (!simple) {
 
 			if (hasCommonCondition) {
-				
-				if(example != null) {
+
+				if (example != null) {
 					example = GeneralCriteriaBuilder.buildAnd(example, commonConditions);
 				}
-				
+
 				if (hasDynamicCondition) {
-					example = buildDynamicCondition(example);					
+					example = buildDynamicCondition(example);
 				} else {
-					if(example ==null) {
+					if (example == null) {
 						return getSqlMapper().selectByExample(commonExample);
-					} 
+					}
 				}
 			} else if (hasDynamicCondition) {
 				example = buildDynamicCondition(example);
@@ -598,7 +598,8 @@ public abstract class ServiceSupport<Model> {
 	public void updateModelWrap(Model model) {
 		if (model instanceof BaseModel) {
 			Date now = new Date();
-			String uid = UserSession.getCurrentUserSession().getUserId();
+			UserSession userSession = UserSession.getCurrentUserSession();
+			String uid = userSession == null ? "" : userSession.getUserId();
 			BaseModel baseModel = (BaseModel) model;
 			baseModel.setUpdateTime(now);
 			baseModel.setUpdateUserId(uid);
@@ -613,7 +614,8 @@ public abstract class ServiceSupport<Model> {
 	public void saveModelWrap(Model model) {
 		if (model instanceof BaseModel) {
 			Date now = new Date();
-			String uid = UserSession.getCurrentUserSession().getUserId();
+			UserSession userSession = UserSession.getCurrentUserSession();
+			String uid = userSession == null ? "" : userSession.getUserId();
 			BaseModel baseModel = (BaseModel) model;
 			baseModel.setCreateTime(now);
 			baseModel.setCreateUserId(uid);

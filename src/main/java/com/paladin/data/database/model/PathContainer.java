@@ -5,7 +5,7 @@ import com.paladin.data.struct.ObjectContainer;
 public class PathContainer<T> extends ObjectContainer<String, T> {
 
 	public Object getByPath(String path) {
-		return getByPath(path.split("."), 0);
+		return getByPath(path.split("\\."), 0);
 	}
 
 	public Object getByPath(String[] pathKeys) {

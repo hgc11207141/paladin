@@ -210,4 +210,24 @@ public class NameUtil {
 
 		return new String(cs);
 	}
+	
+	/**
+	 * 首字母小写
+	 * @param name
+	 * @return
+	 */
+	public static String firstLowerCase(String name) {
+
+		if (name == null || name.length() == 0)
+			return name;
+
+		char[] cs = name.toCharArray();
+
+		char c = cs[0];
+		if (c >= 65 && c <= 90) {
+			cs[0] += 32;
+		}
+				
+		return new String(cs);
+	}
 }

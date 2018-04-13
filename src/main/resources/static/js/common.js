@@ -39,8 +39,7 @@
                 "q+": Math.floor((date.getMonth() + 3) / 3), // quarter
                 "S": date.getMilliseconds() // millisecond
             }
-            if (/(y+)/.test(format)) format = format.replace(RegExp.$1,
-                (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+            if (/(y+)/.test(format)) format = format.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
             for (var k in o)
                 if (new RegExp("(" + k + ")").test(format))
                     format = format.replace(RegExp.$1,
@@ -58,6 +57,40 @@
             return false;
         }
     });
+
+    $.fn.getFormParams = function(param) {
+
+        $(this).each(function() {
+            $(this).find(
+                    "input[type='text']:enabled," + "input[type='password']:enabled," +
+                    "input[type='hidden']:enabled," + "input[type='checkbox']:enabled:checked," +
+                    "input[type='radio']:enabled:checked," + "select:enabled," + "textarea:enabled")
+                .each(function() {
+                    var that = $(this);
+                    var name = that.attr("name");
+                    name = name || that.attr("id");
+                    if (!name)
+                        return;
+                    var value = that.val();
+                    if (value === null)
+                        return;
+
+                    var type = typeof(value);
+                    if (type === "string") {
+                        value = value.trim();
+                        if (value === "")
+                            return;
+                    } else if (type === "undefined")
+                        return;
+
+                    param[name] = value;
+                });
+        });
+    };
+
+
+
+
 
     // --------------------------------------
     // constant
@@ -125,10 +158,31 @@
             })
 
         },
-        wrapAjaxSuccessCallback: function(callback) {
+        wrapAjaxSuccessCallback: function(callback, submitBtn) {
+
+            if (callback && typeof callback != 'function' && !submitBtn) {
+                submitBtn = callback;
+            }
+
+            if (submitBtn) {
+                $(submitBtn).each(function() {
+                    var that = $(this);
+                    that.data("loading", true);
+                    var text = that.text();
+                    that.data("orginText", text);
+                    that.text(text + '中...').prop('disabled', true).addClass('disabled');
+                });
+            }
 
             // 包装Ajax成功回调方法，过滤返回内容
             return function(response) {
+                if (submitBtn) {
+                    $(submitBtn).each(function() {
+                        var that = $(this);
+                        var text = that.text();
+                        that.removeClass('disabled').prop('disabled', false).text(that.data("orginText"));
+                    });
+                }
 
                 if (typeof response === 'string') {
                     response = JSON.parse(response)
@@ -153,7 +207,12 @@
                 }
             }
         },
-        postJsonAjax: function(url, data, callback) {
+        postJsonAjax: function(url, data, callback, submitBtn) {
+
+            if (callback && typeof callback != 'function' && !submitBtn) {
+                submitBtn = callback;
+            }
+
             // 发送json格式ajax请求
             $.sendAjax({
                 type: "POST",
@@ -164,27 +223,27 @@
                 success: function(result) {
                     if (callback && typeof callback === 'function')
                         callback(result);
-                }
-
+                },
+                submitBtn: submitBtn
             });
         },
         sendAjax: function(options) {
             // 发送ajax请求 对应$.ajax()
             var callback = options.success;
-            options.success = $.wrapAjaxSuccessCallback(callback);
+            options.success = $.wrapAjaxSuccessCallback(callback, options.submitBtn);
             $.ajax(options);
         },
-        getAjax: function(url, callback) {
+        getAjax: function(url, callback, submitBtn) {
             // 对应$.get()
-            $.get(url, $.wrapAjaxSuccessCallback(callback));
+            $.get(url, $.wrapAjaxSuccessCallback(callback, submitBtn));
         },
-        postAjax: function(url, data, callback) {
+        postAjax: function(url, data, callback, submitBtn) {
             // 对应$.post()
             if (typeof data === 'function') {
                 callback = data;
                 data = null;
             }
-            $.post(url, data, $.wrapAjaxSuccessCallback(callback));
+            $.post(url, data, $.wrapAjaxSuccessCallback(callback, submitBtn));
         },
         postFormAjax: function(url, args) {
             // 提交表单形式ajax
@@ -522,21 +581,9 @@ function _initTable() {
 
                                 return "";
                             }
-                        } else if (col.formatter == 'date') {
+                        } else if (col.formatter == 'boolean') {
                             col.formatter = function(value, row, index) {
-                                if (value) {
-                                    var date;
-                                    if (isNaN(value)) {
-                                        date = new Date(value);
-                                    } else {
-                                        date = new Date();
-                                        date.setTime(value);
-                                    }
-
-                                    return $.formatDate(date, "yyyy-MM-dd");
-                                }
-
-                                return "";
+                                return (value === true || value === "true") ? "是" : "否";
                             }
                         }
                     }
@@ -563,13 +610,7 @@ function _initTable() {
                     params = q(params);
                 }
 
-                $(options.searchbar).find(
-                        "input[type='text']:enabled," + "input[type='password']:enabled," +
-                        "input[type='hidden']:enabled," + "input[type='checkbox']:enabled:checked," +
-                        "input[type='radio']:enabled:checked," + "select:enabled," + "textarea:enabled")
-                    .each(function() {
-                        $(this).toQueryCondition(params);
-                    });
+                $(options.searchbar).getFormParams(params);
 
                 return params;
             };
@@ -711,27 +752,6 @@ function _initTable() {
         return tables.length == 1 ? tables[0] : tables;
     };
 
-    $.fn.toQueryCondition = function(param) {
-        var that = $(this);
-        var name = that.attr("name");
-        name = name || that.attr("id");
-        if (!name)
-            return;
-        var value = that.val();
-        if (value === null)
-            return;
-
-        var type = typeof(value);
-        if (type === "string") {
-            value = value.trim();
-            if (value === "")
-                return;
-        } else if (type === "undefined")
-            return;
-
-        param[name] = value;
-    };
-
     // 页码本地化
 
     $.fn.bootstrapTable.locales['zh-CN'] = {
@@ -773,9 +793,9 @@ function _initTable() {
     $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN']);
 
     // 修改排序部分代码，使sortName起效
-    if($.fn.bootstrapTable){
-    	var BootstrapTable = $.fn.bootstrapTable.Constructor;
-        BootstrapTable.prototype.onSort = function (event) {
+    if ($.fn.bootstrapTable) {
+        var BootstrapTable = $.fn.bootstrapTable.Constructor;
+        BootstrapTable.prototype.onSort = function(event) {
             var $this = event.type === "keypress" ? $(event.currentTarget) : $(event.currentTarget).parent(),
                 $this_ = this.$header.find('th').eq($this.index()),
                 sortName = this.header.sortNames[$this.index()];
@@ -803,16 +823,16 @@ function _initTable() {
             this.initSort();
             this.initBody();
         };
-        
-        BootstrapTable.prototype.getCaret = function () {
+
+        BootstrapTable.prototype.getCaret = function() {
             var that = this;
 
-            $.each(this.$header.find('th'), function (i, th) {
+            $.each(this.$header.find('th'), function(i, th) {
                 var sortName = that.header.sortNames[i];
                 $(th).find('.sortable').removeClass('desc asc').addClass((sortName || $(th).data('field')) === that.options.sortName ? that.options.sortOrder : 'both');
             });
         };
-    }   
+    }
 }
 
 
