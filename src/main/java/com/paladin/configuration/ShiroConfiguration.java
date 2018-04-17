@@ -286,7 +286,7 @@ public class ShiroConfiguration {
 						String requestUrl = httpRequest.getRequestURI();
 
 						// 过滤静态资源，防止静态资源读取session等操作
-						if (!requestUrl.startsWith("/manage/")) {
+						if (!requestUrl.startsWith("/health/")) {
 							chain.doFilter(servletRequest, servletResponse);
 							return;
 						}
@@ -302,9 +302,9 @@ public class ShiroConfiguration {
 		// 必须设置 SecurityManager
 		shiroFilterFactoryBean.setSecurityManager(securityManager);
 		// 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-		shiroFilterFactoryBean.setLoginUrl("/manage/login");
+		shiroFilterFactoryBean.setLoginUrl("/health/login");
 		// 登录成功后要跳转的链接
-		shiroFilterFactoryBean.setSuccessUrl("/manage/index");
+		shiroFilterFactoryBean.setSuccessUrl("/health/index");
 		// 未授权界面;
 		shiroFilterFactoryBean.setUnauthorizedUrl("/no_permission.html");
 
@@ -339,7 +339,7 @@ public class ShiroConfiguration {
 		// filterChainDefinitionMap.put("/file/**", "anon");
 		// filterChainDefinitionMap.put("/favicon.ico", "anon");
 
-		filterChainDefinitionMap.put("/manage/logout", "logout");
+		filterChainDefinitionMap.put("/health/logout", "logout");
 		// 配置记住我或认证通过可以访问的地址
 		filterChainDefinitionMap.put("/**", "authc");
 
