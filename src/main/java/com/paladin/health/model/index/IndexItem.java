@@ -1,10 +1,12 @@
 package com.paladin.health.model.index;
 
-import com.paladin.framework.common.UnDeleteModel;
 import javax.persistence.Id;
 
-public class IndexItem extends UnDeleteModel {
+import com.paladin.framework.common.UnDeleteModel;
 
+public class IndexItem extends UnDeleteModel{
+
+	@Id
 	private String id;
 
 	private String name;
@@ -13,9 +15,8 @@ public class IndexItem extends UnDeleteModel {
 
 	private String parentId;
 
-	private String key;
+	private String itemKey;
 
-	@Id
 	public String getId() {
 		return id;
 	}
@@ -48,12 +49,12 @@ public class IndexItem extends UnDeleteModel {
 		this.parentId = parentId;
 	}
 
-	public String getKey() {
-		return key;
+	public String getItemKey() {
+		return itemKey;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setItemKey(String itemKey) {
+		this.itemKey = itemKey;
 	}
 
 }

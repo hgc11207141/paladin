@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50624
 File Encoding         : 65001
 
-Date: 2018-04-17 15:54:18
+Date: 2018-04-19 11:09:38
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -67,18 +67,22 @@ CREATE TABLE `index_item` (
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT '名称',
   `item_type` varchar(10) COLLATE utf8_unicode_ci NOT NULL COMMENT 'CATEGORY（分类）/STANDARD（标准，规格，指标）',
   `parent_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '父项ID',
-  `key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'STANDARD的key',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `create_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建人',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `update_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '更新人',
+  `item_key` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'STANDARD的key',
   `is_delete` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_key` (`item_key`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of index_item
 -- ----------------------------
+INSERT INTO `index_item` VALUES ('1', '一般状况', 'CATEGORY', null, null, '0');
+INSERT INTO `index_item` VALUES ('11', '体温', 'STANDARD', '1', 'temperature', '0');
+INSERT INTO `index_item` VALUES ('12', '脉搏', 'STANDARD', '1', 'pulse', '0');
+INSERT INTO `index_item` VALUES ('2', '生活方式', 'CATEGORY', null, null, '0');
+INSERT INTO `index_item` VALUES ('21', '体育锻炼', 'CATEGORY', '2', null, '0');
+INSERT INTO `index_item` VALUES ('211', '锻炼频率', 'STANDARD', '21', 'exercise_frequency', '0');
+INSERT INTO `index_item` VALUES ('212', '每次锻炼时间', 'STANDARD', '21', 'exercise_time_eachtime', '0');
 
 -- ----------------------------
 -- Table structure for `index_item_dependence`
@@ -90,16 +94,13 @@ CREATE TABLE `index_item_dependence` (
   `dependence_id` varchar(32) COLLATE utf8_unicode_ci NOT NULL COMMENT '依赖项ID',
   `dependence_relation` varchar(20) COLLATE utf8_unicode_ci NOT NULL COMMENT '依赖关系：KEY_EQUAL/STRING_EQUAL/NUMBER_EQUAL/NUMBER_GREAT/NUMBER_GREAT_EQUAL/NUMBER_LESS/NUMBER_LESS_EQUAL',
   `dependence_value` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT '依赖值',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `create_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建人',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `update_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of index_item_dependence
 -- ----------------------------
+INSERT INTO `index_item_dependence` VALUES ('', '212', '211', 'KEY_NOT_EQUAL', 'never');
 
 -- ----------------------------
 -- Table structure for `index_item_standard`
@@ -108,18 +109,18 @@ DROP TABLE IF EXISTS `index_item_standard`;
 CREATE TABLE `index_item_standard` (
   `id` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `value_definition_id` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
-  `key` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT 'key',
+  `standard_key` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT 'key',
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL COMMENT '名称',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `create_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建人',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `update_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of index_item_standard
 -- ----------------------------
+INSERT INTO `index_item_standard` VALUES ('2111', '211', 'every_day', '每天');
+INSERT INTO `index_item_standard` VALUES ('2112', '211', 'more_once_weekly', '每周一次以上');
+INSERT INTO `index_item_standard` VALUES ('2113', '211', 'occasionally', '偶尔');
+INSERT INTO `index_item_standard` VALUES ('2114', '211', 'never', '从不');
 
 -- ----------------------------
 -- Table structure for `index_item_value_definition`
@@ -131,17 +132,18 @@ CREATE TABLE `index_item_value_definition` (
   `input_type` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'SELECT/INPUT',
   `is_single` tinyint(4) DEFAULT '0' COMMENT 'SELECT下是否单选',
   `template` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'INPUT下模板',
+  `unit` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   `value_type` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'NUMBER/TEXT',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `create_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '创建人',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `update_user_id` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '更新人',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 -- Records of index_item_value_definition
 -- ----------------------------
+INSERT INTO `index_item_value_definition` VALUES ('11', '11', 'INPUT', '0', null, '℃', 'NUMBER');
+INSERT INTO `index_item_value_definition` VALUES ('12', '12', 'INPUT', '0', null, '次/分钟', 'NUMBER');
+INSERT INTO `index_item_value_definition` VALUES ('211', '211', 'SELECT', '1', null, null, null);
+INSERT INTO `index_item_value_definition` VALUES ('212', '212', 'INPUT', '0', null, '分钟', 'NUMBER');
 
 -- ----------------------------
 -- Table structure for `sys_user`

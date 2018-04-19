@@ -1,19 +1,20 @@
 package com.paladin.health.model.index;
 
-import com.paladin.framework.common.BaseModel;
 import javax.persistence.Id;
 
-public class IndexItemStandard extends BaseModel {
+public class IndexItemStandard {
 
+	public final static String COLUMN_FIELD_VALUE_DEFINITION_ID = "valueDefinitionId";
+	
+	@Id
 	private String id;
 
 	private String valueDefinitionId;
 
-	private String key;
+	private String standardKey;
 
 	private String name;
 
-	@Id
 	public String getId() {
 		return id;
 	}
@@ -30,20 +31,20 @@ public class IndexItemStandard extends BaseModel {
 		this.valueDefinitionId = valueDefinitionId;
 	}
 
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getStandardKey() {
+		return standardKey;
+	}
+
+	public void setStandardKey(String standardKey) {
+		this.standardKey = standardKey;
 	}
 
 }

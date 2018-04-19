@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.paladin.framework.common.BaseModel;
+import com.paladin.framework.common.UnDeleteBaseModel;
 import com.paladin.framework.common.UnDeleteModel;
 
 public class GenerateConfig {
@@ -20,6 +21,8 @@ public class GenerateConfig {
 		
 		baseModelTypeMap.add(BaseModel.class);
 		baseModelTypeMap.add(UnDeleteModel.class);
+		baseModelTypeMap.add(UnDeleteBaseModel.class);
+
 	}
 	
 	public static String getRegularType(Class<?> type) {

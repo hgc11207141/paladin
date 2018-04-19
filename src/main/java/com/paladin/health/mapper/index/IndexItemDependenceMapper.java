@@ -5,4 +5,6 @@ import com.paladin.framework.mybatis.CustomMapper;
 
 public interface IndexItemDependenceMapper extends CustomMapper<IndexItemDependence>{
 
+	public void getDependencyRelation(String itemId);
+
 }

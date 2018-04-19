@@ -16,8 +16,6 @@ public abstract class BaseModel {
 	
 	public final static String COLUMN_FIELD_CREATE_TIME = "createTime";
 
-	
-	
 	private Date createTime;
 
     private String createUserId;

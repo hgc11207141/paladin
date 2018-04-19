@@ -11,10 +11,12 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -583,5 +585,56 @@ public class ReflectUtil {
 		return primitives.get(primitiveClass);
 	}
 	
+	/**
+	 * 找到注释有该注解的Field
+	 * 
+	 * @param clazz
+	 * @param annotationClass
+	 * @return
+	 */
+	public static Field[] getAnnotationField(Class<?> clazz, Class<? extends Annotation> annotationClass) {
+		List<Field> fieldList = new ArrayList<>();
+		_getAnnotationField(clazz, annotationClass, fieldList);
+		return fieldList.toArray(new Field[fieldList.size()]);
+	}
+
+	private static void _getAnnotationField(Class<?> clazz, Class<? extends Annotation> annotationClass, List<Field> fieldList) {
+
+		if (clazz == null)
+			return;
+
+		Field[] fields = clazz.getDeclaredFields();
+		for (Field field : fields) {
+			if (field.getAnnotation(annotationClass) != null)
+				fieldList.add(field);
+		}
+
+		_getAnnotationField(clazz.getSuperclass(), annotationClass, fieldList);
+	}
+
+	/**
+	 * <ul>
+	 * modifier 与修饰符关系
+	 * <li>PUBLIC: 1 	1</li>
+	 * <li>PRIVATE: 2 	10</li>
+	 * <li>PROTECTED: 4 	100</li>
+	 * <li>STATIC: 8 	1000</li>
+	 * <li>FINAL: 16 	10000</li>
+	 * <li>SYNCHRONIZED: 32 	100000</li>
+	 * <li>VOLATILE: 64 	1000000</li>
+	 * <li>TRANSIENT: 128 	10000000</li>
+	 * <li>NATIVE: 256 	100000000</li>
+	 * <li>INTERFACE: 512 	1000000000</li>
+	 * <li>ABSTRACT: 1024 	10000000000</li>
+	 * <li>STRICT: 2048 	100000000000</li>
+	 * </ul>
+	 * 
+	 * @param field
+	 * @return
+	 */
+	public static boolean isStatic(Field field) {
+		return (field.getModifiers() & 0x8) != 0;
+	}
+
 	
 }

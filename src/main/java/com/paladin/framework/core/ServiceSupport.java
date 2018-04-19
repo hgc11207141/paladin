@@ -20,7 +20,7 @@ import com.paladin.framework.common.OffsetPage;
 import com.paladin.framework.common.OrderType;
 import com.paladin.framework.common.QueryOrderBy;
 import com.paladin.framework.common.QueryType;
-import com.paladin.framework.common.UnDeleteModel;
+import com.paladin.framework.common.UnDelete;
 import com.paladin.framework.common.GeneralCriteriaBuilder.Condition;
 import com.paladin.framework.mybatis.CustomMapper;
 import com.paladin.framework.utils.ParseUtil;
@@ -92,7 +92,7 @@ public abstract class ServiceSupport<Model> {
 		}
 
 		// 是否逻辑删除数据模型
-		if (UnDeleteModel.class.isAssignableFrom(modelType)) {
+		if (UnDelete.class.isAssignableFrom(modelType)) {
 			isUnDelete = true;
 		}
 
@@ -114,7 +114,7 @@ public abstract class ServiceSupport<Model> {
 
 		// 如果是逻辑删除模型，则所有查询中需要过滤删除数据
 		if (isUnDelete) {
-			commonConditions.add(new Condition(UnDeleteModel.COLUMN_FIELD_IS_DELETE, QueryType.EQUAL, 0));
+			commonConditions.add(new Condition(UnDelete.COLUMN_FIELD_IS_DELETE, QueryType.EQUAL, 0));
 		}
 
 		if (commonConditions.size() > 0) {
@@ -580,7 +580,7 @@ public abstract class ServiceSupport<Model> {
 		if (isUnDelete) {
 			Model model = getSqlMapper().selectByPrimaryKey(pk);
 			if (model != null) {
-				((UnDeleteModel) model).setIsDelete(1);
+				((UnDelete) model).setIsDelete(1);
 				updateModelWrap(model);
 				return getSqlMapper().updateByPrimaryKey(model);
 			}

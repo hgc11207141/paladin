@@ -154,7 +154,7 @@
             // 暂时跳转主页面到登录页面，有时间可以做弹出登录窗口登录，成功后继续执行ajax请求处理
 
             $.failAlert("请先登录", function() {
-                top.location.href = "/login";
+                top.location.href = "/health/login";
             })
 
         },
@@ -299,6 +299,36 @@
     _initTable();
     _initEnumConstant();
     _initForm();
+
+
+    // ------------------------------------------
+    //
+    // 页面处理
+    //
+    // -----------------------------------------
+
+    $.fn.showInfoDescription = function(items, isHorizontal) {
+        _showInfoDescription(items, $(this), isHorizontal);
+    }
+
+
+    // -----------------------------------------
+    //
+    // cache
+    //
+    // -----------------------------------------
+
+    window.mycache = {};
+
+    $.extend({
+        putCache: function(key, value) {
+            window.mycache[key] = value;
+        },
+        getCache: function(key) {
+            return window.mycache[key];
+        }
+    })
+
 
 })(jQuery);
 
@@ -1161,7 +1191,7 @@ function _initForm(container, formOptions) {
 
         var backurl = submitForm.attr("callback-url");
 
-        if (backurl && !(form[0].submitSuccessHandler || form.data("submitSuccessHandler"))) {
+        if (backurl && !(submitForm[0].submitSuccessHandler || submitForm.data("submitSuccessHandler"))) {
             submitForm.setFormSubmitHandler(function() {
                 layer.alert("操作成功", function(index) {
                     layer.close(index);
@@ -1172,4 +1202,35 @@ function _initForm(container, formOptions) {
 
         submitForm.createFormValidater(config);
     });
+}
+
+
+// ------------------------------------------
+//
+// 页面处理
+//
+// -----------------------------------------
+
+/**
+ * 信息描述通用显示
+ */
+function _showInfoDescription(items, container, isHorizontal) {
+
+    var c = $(container);
+    c.empty();
+    var dl = $('<dl ' + (isHorizontal ? 'class="dl-horizontal"' : '') + '></dl>');
+
+    items.forEach(function(i) {
+        if(i.content instanceof jQuery){
+            dl.append("<dt>" + i.title + ":</dt>");
+            var k = $("<dd></dd>");
+            k.append(i.content);
+            dl.append(k);
+        } else {
+            dl.append("<dt>" + i.title + ":</dt><dd>" + i.content + "</dd>");
+        }
+
+    });
+
+    c.append(dl);
 }

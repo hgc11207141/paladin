@@ -53,6 +53,7 @@ public class ItemValueDefinition {
 	// ------------------------ INPUT ----------------------------
 	
 	private String template;					// 输入模板
+	private String unit;							// 单位
 	private ValueType valueType;			// 值类型
 
 	public ValueType getValueType() {
@@ -71,6 +72,14 @@ public class ItemValueDefinition {
 		this.template = template;
 	}
 	
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+
 	// ------------------------ INPUT ----------------------------
 	
 	
@@ -81,6 +90,7 @@ public class ItemValueDefinition {
 	public static enum ValueType {
 		TEXT,NUMBER;
 	}
+
 
 
 

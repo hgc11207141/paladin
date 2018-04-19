@@ -6,7 +6,7 @@ package com.paladin.framework.common;
  * @author TontoZhou
  * @since 2018年1月22日
  */
-public abstract class UnDeleteModel implements UnDelete {
+public abstract class UnDeleteBaseModel extends BaseModel implements UnDelete {
 
 	private Integer isDelete = 0;
 

@@ -1,10 +1,12 @@
 package com.paladin.health.model.index;
 
-import com.paladin.framework.common.BaseModel;
 import javax.persistence.Id;
 
-public class IndexItemDependence extends BaseModel {
+public class IndexItemDependence {
 
+	public final static String COLUMN_FIELD_TARGET_ID = "targetId";
+
+	@Id
 	private String id;
 
 	private String targetId;
@@ -14,8 +16,7 @@ public class IndexItemDependence extends BaseModel {
 	private String dependenceRelation;
 
 	private String dependenceValue;
-
-	@Id
+	
 	public String getId() {
 		return id;
 	}

@@ -146,14 +146,15 @@ public class GenerateModelClassUtil {
 		sb.append(" {\n\n");
 
 		for (GenerateColumnOption columnOption : columnOptions) {
+			
+			if(columnOption.isPrimary()) {
+				sb.append(tab).append("@Id").append("\n");
+			}
+			
 			sb.append(tab).append("private ").append(columnOption.getFieldType().getSimpleName()).append(" ").append(columnOption.getFieldName()).append(";\n\n");
 		}
 
 		for (GenerateColumnOption columnOption : columnOptions) {
-						
-			if(columnOption.isPrimary()) {
-				sb.append(tab).append("@Id").append("\n");
-			}
 
 			String fieldName = columnOption.getFieldName();
 			String className = columnOption.getFieldType().getSimpleName();

@@ -5,18 +5,21 @@ import com.paladin.health.index.item.StandardItem;
 
 /**
  * 项目依赖关系
+ * 
  * @author TontoZhou
  * @since 2018年4月17日
  */
 public class ItemDependence {
 
-	private Item target;								// 目标
-	private StandardItem dependenceItem;		// 依赖项
-	private String dependenceValue; 				// 依赖值
-	private DependenceRelation dependRelation;	// 依赖关系
+	private Item target; // 目标
+	private StandardItem dependenceItem; // 依赖项
+	private String dependenceValue; // 依赖值
+	private DependenceRelation dependRelation; // 依赖关系
 
 	public static enum DependenceRelation {
-		KEY_EQUAL, STRING_EQUAL, NUMBER_EQUAL, NUMBER_GREAT, NUMBER_GREAT_EQUAL, NUMBER_LESS, NUMBER_LESS_EQUAL;
+		KEY_EQUAL, KEY_NOT_EQUAL, KEY_IN, 
+		STRING_EQUAL, STRING_NOT_EQUAL, 
+		NUMBER_EQUAL, NUMBER_NOT_EQUAL, NUMBER_GREAT, NUMBER_GREAT_EQUAL, NUMBER_LESS, NUMBER_LESS_EQUAL;
 	}
 
 	public Item getTarget() {
@@ -50,7 +53,5 @@ public class ItemDependence {
 	public void setDependRelation(DependenceRelation dependRelation) {
 		this.dependRelation = dependRelation;
 	}
-
-	
 
 }

@@ -1,19 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:include="health/header" />
+<link rel="stylesheet" href="/static/assets/bootstrap-treeview/bootstrap-treeview.min.css" />
 
 <body>
-    <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>标准管理<small></small></h1>
     </section>
-    
     <section class="content">
-    	
-    
+        <div class="row">
+            <div id="tree" class="col-md-6">
+            </div>
+            <div class="col-md-6">
+                <div class="box box-solid">
+                    <div class="box-header with-border">
+                        <i class="fa fa-info-circle"></i>
+                        <h3 class="box-title">详情</h3>
+                    </div>
+                    <div id="item" class="box-body">
+                    </div>
+                </div>
+            </div>
     </section>
-  
     <div th:include="health/footer" />
+    <script type="text/javascript" src="/static/assets/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+    <script type="text/javascript" src="/static/js/health/index/index_item_index.js"></script>
 </body>
 
 </html>

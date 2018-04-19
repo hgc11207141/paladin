@@ -1,52 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-	<title>宣教系统</title>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>宣教系统</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-	<link rel="stylesheet" href="/static/assets/bootstrap3/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="/static/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/static/css/ionicons.min.css">
-	<link rel="stylesheet" href="/static/css/AdminLTE.min.css">
-	<link rel="stylesheet" href="/static/css/skins/skin-green-light.min.css">
-	<style type="text/css">
-        html {
-            overflow: hidden;
-        }
+    <link rel="stylesheet" href="/static/assets/bootstrap3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/ionicons.min.css">
+    <link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="/static/css/skins/skin-green-light.min.css">
+    <style type="text/css">
+    html {
+        overflow: hidden;
+    }
     </style>
 </head>
 
 <body class="hold-transition skin-green-light sidebar-mini fixed">
     <div class="wrapper">
+    
         <header class="main-header">
             <a href="index2.html" class="logo">
                 <span class="logo-mini"><b>宣</b>教</span>
                 <span class="logo-lg"><b>宣教</b>系统</span>
             </a>
-            <nav class="navbar navbar-static-top" role="navigation">
-                <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button"><span class="sr-only">Toggle navigation</span></a>
+            <nav class="navbar navbar-static-top">
+                <!-- <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a> -->
                 <div class="navbar-custom-menu">
                     <ul class="nav navbar-nav">
-                        <!-- User Account Menu -->
                         <li class="dropdown user user-menu">
-                            <!-- Menu Toggle Button -->
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <!-- The user image in the navbar-->
-                                <img src="/static/image/user.png" class="user-image" alt="User Image">
-                                <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                                <img src="/static/image/user.png" class="user-image" alt="User Image"/>
                                 <span class="hidden-xs">周旭武</span>
                             </a>
                             <ul class="dropdown-menu">
                                 <!-- The user image in the menu -->
                                 <li class="user-header">
-                                    <img src="/static/image/user.png" class="img-circle" alt="User Image">
-                                    <p>
-                                        周旭武 - Java Developer
-                                        <small>Member since Nov. 2012</small>
-                                    </p>
+                                    <img src="/static/image/user.png" class="img-circle" alt="User Image" />
+                                    <p>周旭武 - Java Developer<small>Member since Nov. 2012</small></p>
                                 </li>
-                                <!-- Menu Body -->
                                 <li class="user-body">
                                     <div class="row">
                                         <div class="col-xs-4 text-center">
@@ -59,9 +58,7 @@
                                             <a href="#">Friends</a>
                                         </div>
                                     </div>
-                                    <!-- /.row -->
                                 </li>
-                                <!-- Menu Footer-->
                                 <li class="user-footer">
                                     <div class="pull-left">
                                         <a href="#" class="btn btn-default btn-flat">修改密码</a>
@@ -83,42 +80,33 @@
                 </div>
             </nav>
         </header>
-        <!-- Left side column. contains the logo and sidebar -->
+        
         <aside class="main-sidebar">
-            <!-- sidebar: style can be found in sidebar.less -->
             <section class="sidebar">
-                <!-- Sidebar user panel (optional) -->
                 <div class="user-panel">
                     <div class="pull-left image">
                         <img src="/static/image/user.png" class="img-circle" alt="User Image">
                     </div>
                     <div class="pull-left info">
                         <p>周旭武</p>
-                        <!-- Status -->
                         <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
                     </div>
                 </div>
-                <!-- search form (Optional) -->
                 <form action="#" method="get" class="sidebar-form">
                     <div class="input-group">
                         <input type="text" name="q" class="form-control" placeholder="Search...">
                         <span class="input-group-btn">
-                            <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i></button>
-                        </span>
+                <button type="button" name="search" id="search-btn" class="btn btn-flat" onclick="search_menu()"><i
+                        class="fa fa-search"></i>
+                </button>
+              </span>
                     </div>
                 </form>
-                <!-- /.search form -->
-
-                <!-- Sidebar Menu -->
-                <ul class="sidebar-menu" data-widget="tree"></ul>    
-                <!-- /.sidebar-menu -->
-
+                <ul class="sidebar-menu"></ul>
             </section>
-            <!-- /.sidebar -->
         </aside>
-        <!-- Content Wrapper. Contains page content -->
+        
         <div class="content-wrapper" id="content-wrapper" style="min-height: 421px;">
-            <!--bootstrap tab风格 多标签页-->
             <div class="content-tabs">
                 <button class="roll-nav roll-left tabLeft" onclick="scrollTabLeft()">
                     <i class="fa fa-backward"></i>
@@ -143,38 +131,28 @@
                 </div>
                 <button class="roll-nav roll-right fullscreen" onclick="App.handleFullScreen()"><i class="fa fa-arrows-alt"></i></button>
             </div>
-            <div class="content-iframe " style="background-color: #ffffff; ">
+            <div class="content-iframe " style="background-color: #ecf0f5; ">
                 <div class="tab-content " id="tab-content">
                 </div>
             </div>
         </div>
-        <!-- /.content-wrapper -->
-        <!-- Main Footer -->
+        
         <footer class="main-footer">
-            <!-- To the right -->
             <div class="pull-right hidden-xs">
                 <b>Version</b> 1.0.0
             </div>
-            <!-- Default to the left -->
             <strong>Copyright &copy; 2017 <a href="http://www.netintech.cn">网进科技</a>.</strong> All rights reserved.
         </footer>
-        <!-- Control Sidebar -->
+        
         <aside class="control-sidebar control-sidebar-dark">
-            <!-- Create the tabs -->
             <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
                 <li class="active"><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
                 <li><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
             </ul>
-            <!-- Tab panes -->
             <div class="tab-content">
-                <!-- Home tab content -->
                 <div class="tab-pane" id="control-sidebar-home-tab">
                 </div>
-                <!-- /.tab-pane -->
-                <!-- Stats tab content -->
                 <div class="tab-pane" id="control-sidebar-stats-tab">Stats Tab Content</div>
-                <!-- /.tab-pane -->
-                <!-- Settings tab content -->
                 <div class="tab-pane active" id="control-sidebar-settings-tab">
                     <div>
                         <h4 class="control-sidebar-heading">Layout Options</h4>
@@ -210,23 +188,18 @@
                         </div>
                     </div>
                 </div>
-                <!-- /.tab-pane -->
             </div>
         </aside>
-        <!-- /.control-sidebar -->
         <div class="control-sidebar-bg"></div>
     </div>
     <!-- ./wrapper -->
-    
     <!-- REQUIRED JS SCRIPTS -->
     <script src="/static/assets/jquery/jquery-2.2.4.min.js"></script>
-	<script src="/static/assets/bootstrap3/js/bootstrap.min.js"></script>	
-	<script src="/static/assets/adminLTE/js/adminlte.min.js"></script>	 
- 	<script src="/static/assets/adminLTE/components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
-    <script src="/static/assets/adminLTE/components/fastclick/lib/fastclick.js"></script>    
-	<script src="/static/js/app/app.min.js"></script>
+    <script src="/static/assets/bootstrap3/js/bootstrap.min.js"></script>
+    <script src="/static/assets/adminLTE/components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="/static/assets/adminLTE/components/fastclick/lib/fastclick.js"></script>
+    <script src="/static/js/app/app.min.js"></script>
     <script src="/static/js/app/app_iframe.min.js"></script>
-
     <script type="text/javascript">
     /**
      * 本地搜索菜单
@@ -267,7 +240,7 @@
             url: 'main',
             urlType: "relative"
         });*/
-        
+
         App.fixIframeCotent();
 
         var menus = [{
@@ -286,11 +259,18 @@
                         icon: "fa fa-circle-o",
                         url: "index/index",
                         targetType: "iframe-tab"
+                    },
+                    {
+                        id: "90012",
+                        text: "分析库管理",
+                        icon: "fa fa-circle-o",
+                        url: "index/index",
+                        targetType: "iframe-tab"
                     }
                 ]
             }
         ];
-        
+
         $('.sidebar-menu').sidebarMenu({ data: menus });
 
         // 动态创建菜单后，可以重新计算 SlimScroll

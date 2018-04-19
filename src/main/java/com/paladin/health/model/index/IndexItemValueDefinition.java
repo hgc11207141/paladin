@@ -1,10 +1,12 @@
 package com.paladin.health.model.index;
 
-import com.paladin.framework.common.BaseModel;
 import javax.persistence.Id;
 
-public class IndexItemValueDefinition extends BaseModel {
+public class IndexItemValueDefinition {
 
+	public final static String COLUMN_FIELD_ITEM_ID = "itemId";
+	
+	@Id
 	private String id;
 
 	private String itemId;
@@ -16,8 +18,9 @@ public class IndexItemValueDefinition extends BaseModel {
 	private String template;
 
 	private String valueType;
+	
+	private String unit;
 
-	@Id
 	public String getId() {
 		return id;
 	}
@@ -64,6 +67,14 @@ public class IndexItemValueDefinition extends BaseModel {
 
 	public void setValueType(String valueType) {
 		this.valueType = valueType;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
 	}
 
 }
