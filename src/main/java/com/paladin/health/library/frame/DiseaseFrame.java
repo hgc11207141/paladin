@@ -1,23 +1,16 @@
 package com.paladin.health.library.frame;
 
-import java.util.Map;
+import java.util.List;
 
-import com.paladin.health.library.Frame;
+import com.paladin.health.library.Entry;
 
-/**
- * 疾病框架
- * @author TontoZhou
- * @since 2018年4月13日
- */
-public class DiseaseFrame extends Frame{
+public class DiseaseFrame {
+	
+	DiagnosisSlot diagnosisSlot;
+	
+	SymptomSlot symptomSlot;
 	
 	
-	
-	
-	public void diagnose(Map<String, Object> params){
-		
-	}
-
-
+	List<Entry> entries;
 	
 }

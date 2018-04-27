@@ -6,7 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.paladin.health.index.item.ItemDependence.DependenceRelation;
+import com.paladin.health.library.Relation;
+import com.paladin.health.library.index.item.ItemValueDefinition.InputType;
 import com.paladin.health.mapper.index.IndexItemStandardMapper;
 import com.paladin.health.model.index.IndexItem;
 import com.paladin.health.model.index.IndexItemDependence;
@@ -53,37 +54,41 @@ public class IndexItemDependenceService extends ServiceSupport<IndexItemDependen
 			ItemDependenceDetail detail = new ItemDependenceDetail(dependenceItem, itemValueDefinition, dependence);
 			
 			String valueDefinitionId = itemValueDefinition.getId();
-
+			String inputType = itemValueDefinition.getInputType();
 			String relation = dependence.getDependenceRelation();
 
-			if (EnumUtil.equals(relation, DependenceRelation.KEY_EQUAL, DependenceRelation.KEY_NOT_EQUAL)) {
+			if(EnumUtil.equals(inputType, InputType.SELECT)) {
 
-				String key = dependence.getDependenceValue();
-				IndexItemStandard standard = itemStandardMapper.getValueDefinitionStandard(valueDefinitionId, key);
+				if (EnumUtil.equals(relation, Relation.EQUAL, Relation.NOT_EQUAL)) {
 
-				if (standard != null) {
-					detail.setDependenceStandard(standard);
-				}
+					String key = dependence.getDependenceValue();
+					IndexItemStandard standard = itemStandardMapper.getValueDefinitionStandard(valueDefinitionId, key);
 
-			} else if (EnumUtil.equals(relation, DependenceRelation.KEY_IN)) {
+					if (standard != null) {
+						detail.setDependenceStandard(standard);
+					}
 
-				String keyStr = dependence.getDependenceValue();
-				String[] keys = keyStr.split(",");
+				} else if (EnumUtil.equals(relation, Relation.IN)) {
 
-				List<IndexItemStandard> standards = itemStandardMapper.findValueDefinitionStandard(valueDefinitionId);
-				List<IndexItemStandard> validStandards = new ArrayList<>();
+					String keyStr = dependence.getDependenceValue();
+					String[] keys = keyStr.split(",");
 
-				for (String key : keys) {
-					for (IndexItemStandard standard : standards) {
-						if (standard.getStandardKey().equals(key)) {
-							validStandards.add(standard);
-							break;
+					List<IndexItemStandard> standards = itemStandardMapper.findValueDefinitionStandard(valueDefinitionId);
+					List<IndexItemStandard> validStandards = new ArrayList<>();
+
+					for (String key : keys) {
+						for (IndexItemStandard standard : standards) {
+							if (standard.getStandardKey().equals(key)) {
+								validStandards.add(standard);
+								break;
+							}
 						}
 					}
-				}
 
-				detail.setDependenceStandard(validStandards);
+					detail.setDependenceStandard(validStandards);
+				}
 			}
+			
 
 			dependenceDetails.add(detail);
 		}
