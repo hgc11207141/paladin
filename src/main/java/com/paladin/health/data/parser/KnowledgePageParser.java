@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paladin.framework.utils.StringUtil;
 
 public class KnowledgePageParser extends PageParser {
@@ -79,24 +78,15 @@ public class KnowledgePageParser extends PageParser {
 		endMap.add("】");
 	}
 
-	public static void main(String[] args) throws IOException {
-		
-		KnowledgePageParser p = new KnowledgePageParser();
-		Knowledge k = p.parse("tnb", "yyzl");
-		System.out.println(new ObjectMapper().writeValueAsString(k));
-	}
-
 	public Knowledge parse(String disease, String category) throws IOException {
 
 		Document doc = getDocument("http://jbk.39.net/" + disease + "/" + category);
 
-		Elements yinshiElements = doc.getElementsByClass("yinshi_table");
-		List<DietElement> dietElements = parseDietElement(yinshiElements);
-
 		Elements artElements = doc.getElementsByClass("art-box");
 
 		if (artElements == null || artElements.size() == 0) {
-			throw new RuntimeException("找不到疾病[" + disease + ":" + category + "]");
+			System.out.println("找不到疾病[" + disease + ":" + category + "]");
+			return null;
 		}
 
 		List<List<ArticleElement>> articleElements = new ArrayList<>();
@@ -110,15 +100,27 @@ public class KnowledgePageParser extends PageParser {
 
 		Knowledge data = new Knowledge();
 		data.articleElements = articleElements;
-		data.dietElements = dietElements;
 
 		return data;
+	}
+
+	public List<DietElement> parse(String disease) throws IOException {
+
+		Document doc = getDocument("http://jbk.39.net/" + disease + "/ysbj/");
+
+		Elements yinshiElements = doc.getElementsByClass("yinshi_table");
+		if (yinshiElements == null || yinshiElements.size() == 0) {
+			System.out.println("找不到疾病[" + disease + "]的饮食数据");
+			return new ArrayList<>();
+		}
+
+		List<DietElement> dietElements = parseDietElement(yinshiElements);
+		return dietElements;
 	}
 
 	private List<DietElement> parseDietElement(Elements yinshiElements) {
 
 		List<DietElement> dietElements = new ArrayList<>();
-
 		for (Element element : yinshiElements) {
 
 			DietElement suitable = new DietElement(true);
@@ -204,7 +206,9 @@ public class KnowledgePageParser extends PageParser {
 				if (text == null || text.length() == 0) {
 					continue;
 				}
-
+				
+				text = StringUtil.strongTrim(text);
+				
 				String style = element.attr("style");
 
 				if (style != null && style.contains("bold")) {
@@ -229,6 +233,8 @@ public class KnowledgePageParser extends PageParser {
 					Element dt = element.child(0);
 					String content = dt == null ? element.text() : dt.text();
 					myElements.add(new ArticleElement(ElementType.TYPE_CATEGORY, content));
+				} else if ("intro".equals(clazz)) {
+					break;
 				} else {
 					throw new RuntimeException("无法解析：" + element.outerHtml());
 				}
@@ -239,6 +245,10 @@ public class KnowledgePageParser extends PageParser {
 	}
 
 	private ArticleTitle getTitle(String text) {
+
+		if (text.length() < 3) {
+			return null;
+		}
 
 		String s1 = text.substring(0, 1);
 		String s2 = text.substring(1, 2);
@@ -260,14 +270,14 @@ public class KnowledgePageParser extends PageParser {
 		Integer index1 = indexMap.get(s1);
 		if (index1 != null) {
 			char c = s1.charAt(0);
-			if(c >= '①' && c<='⑲') {
+			if (c >= '①' && c <= '⑲') {
 				titleLevel = 3;
-			} else if(c >= '1' && c<='9') {
+			} else if (c >= '1' && c <= '9') {
 				titleLevel = 2;
 			} else {
 				titleLevel = 1;
 			}
-			
+
 			Integer index2 = indexMap.get(text.substring(0, 2));
 			if (index2 != null) {
 				index = index2;
@@ -278,7 +288,7 @@ public class KnowledgePageParser extends PageParser {
 					start = 4;
 				}
 				title = text.substring(start);
-				style = text.substring(2,start);
+				style = text.substring(2, start);
 			} else {
 				index = index1;
 
@@ -289,7 +299,7 @@ public class KnowledgePageParser extends PageParser {
 					start = 3;
 				}
 				title = text.substring(start);
-				style = text.substring(1,start);
+				style = text.substring(1, start);
 			}
 		} else {
 			if (startMap.contains(s1)) {
@@ -297,14 +307,14 @@ public class KnowledgePageParser extends PageParser {
 				Integer ix = indexMap.get(s2);
 				if (ix != null) {
 					char c = s2.charAt(0);
-					if(c >= '①' && c<='⑲') {
+					if (c >= '①' && c <= '⑲') {
 						titleLevel = 3;
-					} else if(c >= '1' && c<='9') {
+					} else if (c >= '1' && c <= '9') {
 						titleLevel = 2;
 					} else {
 						titleLevel = 1;
 					}
-					
+
 					index = ix;
 					ix = indexMap.get(text.substring(1, 3));
 					if (ix != null) {
@@ -316,7 +326,7 @@ public class KnowledgePageParser extends PageParser {
 							start = 5;
 						}
 						title = text.substring(start);
-						style += text.substring(3,start);
+						style += text.substring(3, start);
 					} else {
 						start = 2;
 						if (endMap.contains(s3)) {
@@ -325,7 +335,7 @@ public class KnowledgePageParser extends PageParser {
 							start = 4;
 						}
 						title = text.substring(start);
-						style += text.substring(2,start);
+						style += text.substring(2, start);
 					}
 				}
 			}
@@ -342,6 +352,7 @@ public class KnowledgePageParser extends PageParser {
 		TYPE_TITLE, TYPE_CATEGORY, TYPE_CONTENT;
 	}
 
+	
 	static Pattern pattern = Pattern.compile("(&nbsp;)|(&amp;)|(&quot;)|(&lt;)|(&gt;)|(&#039;)");
 
 	public static class ArticleElement {
@@ -496,7 +507,6 @@ public class KnowledgePageParser extends PageParser {
 	public static class Knowledge {
 
 		List<List<ArticleElement>> articleElements;
-		List<DietElement> dietElements;
 
 		public List<List<ArticleElement>> getArticleElements() {
 			return articleElements;
@@ -505,15 +515,6 @@ public class KnowledgePageParser extends PageParser {
 		public void setArticleElements(List<List<ArticleElement>> articleElements) {
 			this.articleElements = articleElements;
 		}
-
-		public List<DietElement> getDietElements() {
-			return dietElements;
-		}
-
-		public void setDietElements(List<DietElement> dietElements) {
-			this.dietElements = dietElements;
-		}
-
 	}
 
 }

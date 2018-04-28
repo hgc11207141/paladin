@@ -1,6 +1,5 @@
 package com.paladin.health.data;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paladin.framework.common.GeneralCriteriaBuilder;
 import com.paladin.framework.common.QueryType;
 import com.paladin.framework.utils.StringUtil;
@@ -25,6 +23,7 @@ import com.paladin.health.mapper.origin.OriginDiseaseKnowledgeMapper;
 import com.paladin.health.model.origin.OriginDiseaseKnowledge;
 import com.paladin.health.model.origin.OriginDiseaseKnowledgeContent;
 import com.paladin.health.model.origin.OriginDiseaseName;
+import com.paladin.health.service.origin.OriginDiseaseKnowledgeService;
 import com.paladin.health.service.origin.OriginDiseaseNameService;
 
 @Component
@@ -52,6 +51,8 @@ public class OriginDiseaseKnowledgeReader {
 	@Autowired
 	OriginDiseaseNameService diseaseNameService;
 	@Autowired
+	OriginDiseaseKnowledgeService diseaseKnowledgeService;
+	@Autowired
 	OriginDiseaseKnowledgeMapper diseaseKnowledgeMapper;
 	@Autowired
 	OriginDiseaseKnowledgeContentMapper diseaseKnowledgeContentMapper;
@@ -67,36 +68,105 @@ public class OriginDiseaseKnowledgeReader {
 
 		int count = names.size();
 		int i = 0;
+		int size = 1000;
+		boolean goon = true;
 
 		logger.info("开始读取疾病名称数据");
 
-		for (; i < count; i++) {
-			OriginDiseaseName name = names.get(i);
+		while (goon) {
 
-			for (String[] category : categories) {
-				String categoryKey = category[0];
-				try {
-					Knowledge know = knowledgePageParser.parse(name.getNameKey(), categoryKey);
-					ArticleItem articleItem = doCategory(categoryKey, name.getName(), know);
-					save(articleItem, name.getNameKey(), categoryKey, null);
-				} catch (Exception e) {
-					logger.error("读取数据异常[" + name.getName() + ":" + name.getNameKey() + "][category:" + categoryKey + "]，当前知识点ID：" + id + ",内容ID：" + cid);
-					e.printStackTrace();
-					return;
-				}
+			if (i > count) {
+				break;
 			}
-		}
 
-		logger.info("结束读取疾病简介数据");
+			int end = i + size;
+			if (end > count) {
+				end = count;
+				goon = false;
+			}
+
+			final int s = i;
+			final int e = end - 1;
+			final int ti = ++threadCount;
+
+			if (ti == 8 || ti == 5) {
+
+				Thread th = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						logger.info("开始读取第" + s + "条到第" + e + "条疾病知识");
+
+						int d = 1000000;
+
+						int kbase = ti * d;
+						int cbase = kbase;
+
+						int underId = kbase + d;
+
+						Integer kmax = diseaseKnowledgeMapper.getMaxId(underId);
+						Integer cmax = diseaseKnowledgeMapper.getContentMaxId(underId);
+
+						if (cmax != null && cmax > cbase) {
+							cbase = cmax;
+						}
+
+						if (kmax != null && kmax > kbase) {
+							kbase = kmax;
+						}
+
+						int[] ids = new int[] { kbase, cbase };
+						boolean isNew = false;
+
+						for (int x = s; x <= e; x++) {
+							OriginDiseaseName name = names.get(x);
+							String disease = name.getNameKey();
+							String diseaseName = name.getName();
+							if (!isNew && diseaseKnowledgeService.searchAll(new GeneralCriteriaBuilder.Condition("diseaseKey", QueryType.EQUAL, disease))
+									.size() > 0) {
+								continue;
+							} else {
+								isNew = true;
+							}
+
+							for (String[] category : categories) {
+								String categoryKey = category[0];
+								try {
+									Knowledge know = knowledgePageParser.parse(disease, categoryKey);
+									ArticleItem articleItem = doCategory(categoryKey, diseaseName, know);
+									save(articleItem, disease, categoryKey, null, ids);
+								} catch (Exception e) {
+									logger.error("读取数据异常[" + diseaseName + ":" + disease + "][类型:" + categoryKey + "][序号:" + x + "]", e);
+									logger.info("删除疾病[" + disease + "]数据");
+									diseaseKnowledgeMapper.deleteDiseaseContent(disease);
+									diseaseKnowledgeMapper.deleteDiseaseKnowledge(disease);
+									logger.info("退出读取第" + s + "条到第" + e + "条疾病知识");
+									return;
+								}
+							}
+
+						}
+						logger.info("成功读取第" + s + "条到第" + e + "条疾病知识");
+						endThread();
+					}
+				});
+
+				th.start();
+			}
+			i = end;
+		}
 	}
 
-	int id = 405;
-	int cid = 1253;
+	private void endThread() {
+		if (--threadCount == 0) {
+			logger.info("结束读取疾病知识数据");
+		}
+	}
 
-	private void save(ArticleItem articleItem, String diseaseKey, String categoryKey, Integer parentId) {
+	private void save(ArticleItem articleItem, String diseaseKey, String categoryKey, Integer parentId, int[] ids) {
 		OriginDiseaseKnowledge k = new OriginDiseaseKnowledge();
 
-		int kid = id++;
+		int kid = ids[0];
+		ids[0] = ++kid;
 
 		k.setId(kid);
 		k.setDiseaseKey(diseaseKey);
@@ -112,19 +182,27 @@ public class OriginDiseaseKnowledgeReader {
 			kc.setContent(content);
 			kc.setDiseaseKey(diseaseKey);
 			kc.setKnowledgeId(kid);
-			kc.setId(cid++);
+
+			int cid = ids[1];
+			ids[1] = ++cid;
+
+			kc.setId(cid);
 
 			diseaseKnowledgeContentMapper.insert(kc);
 		}
 
 		for (ArticleItem child : articleItem.children) {
-			save(child, diseaseKey, categoryKey, kid);
+			save(child, diseaseKey, categoryKey, kid, ids);
 		}
 	}
 
 	private ArticleItem doCategory(String category, String diseaseName, Knowledge knowledge) {
 		ArticleItem item = new ArticleItem();
 		item.title = categoryNameMap.get(category)[0];
+
+		if (knowledge == null) {
+			return item;
+		}
 
 		for (List<ArticleElement> list : knowledge.getArticleElements()) {
 			if (list.size() > 0) {
@@ -250,10 +328,17 @@ public class OriginDiseaseKnowledgeReader {
 				title = title.substring(1);
 			}
 
+			char c = title.charAt(title.length() - 1);
+			if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= 0x4E00 && c <= 0x9FA5)) {
+
+			} else {
+				title = title.substring(0, title.length() - 1);
+			}
+
 			item.title = title;
 		}
 
-		char[] cs = new char[30];
+		char[] cs = new char[100];
 
 		int i = 0;
 		int s = -1;
@@ -406,16 +491,4 @@ public class OriginDiseaseKnowledgeReader {
 		}
 
 	}
-
-	public static void main(String[] args) throws IOException {
-
-		OriginDiseaseKnowledgeReader reader = new OriginDiseaseKnowledgeReader();
-
-		Knowledge know = knowledgePageParser.parse("tnb", "yyzl");
-		ArticleItem item = reader.doCategory("yyzl", "糖尿病", know);
-
-		System.out.println(new ObjectMapper().writeValueAsString(item));
-
-	}
-
 }

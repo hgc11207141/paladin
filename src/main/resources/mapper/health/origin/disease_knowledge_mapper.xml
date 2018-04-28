@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.paladin.health.mapper.origin.OriginDiseaseKnowledgeMapper">
+	
+	<select id="getMaxId" resultType="Integer">
+		SELECT MAX(id) FROM origin_disease_knowledge WHERE id &lt; #{id}
+	</select>
+	
+	<select id="getContentMaxId" resultType="Integer">
+		SELECT MAX(id) FROM origin_disease_knowledge_content WHERE id &lt; #{id}
+	</select>
+	
+	<delete id="deleteDiseaseKnowledge">
+		DELETE FROM origin_disease_knowledge WHERE disease_key = #{disease}
+	</delete>
+	
+	<delete id="deleteDiseaseContent">
+		DELETE FROM origin_disease_knowledge_content WHERE disease_key = #{disease}
+	</delete>
+	
+</mapper>

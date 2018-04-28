@@ -12,6 +12,7 @@ public class PageParser {
 	
 	protected Document getDocument(String url) throws IOException {
 		Connection conn = Jsoup.connect(url);
+		conn.timeout(60000);
 		// 修改http包中的header,伪装成浏览器进行抓取
 		conn.header("User-Agent", userAgent);
 		return conn.get();
